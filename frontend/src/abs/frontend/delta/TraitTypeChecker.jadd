@@ -1,5 +1,5 @@
 
-import abs.frontend.delta.traittype.TraitType;
+import abs.frontend.delta.traittype.*;
 
 aspect TraitTypeChecker {
     public void Model.analyzeSPL() {
@@ -18,12 +18,12 @@ aspect TraitTypeChecker {
             System.out.println("found trait: "+traitDecl.getName());
             TraitType tt = new TraitType((TraitSetExpr) traitDecl.getTraitExpr());
             tTypes.put(traitDecl.getName(), tt);
-            System.out.println("  type: "+tt);
+            System.out.println("  "+tt);
         }
         for (DeltaDecl deltaDecl : getDeltaDecls()) {
             System.out.println("found delta: "+deltaDecl.getName());
             DeltaType dt = new DeltaType(deltaDecl, tTypes);
-            System.out.println("  type: "+dt);
+            System.out.println("  "+dt);
         }
 
         System.out.println();

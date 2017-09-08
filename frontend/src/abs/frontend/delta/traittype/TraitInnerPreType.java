@@ -9,9 +9,9 @@ import abs.frontend.delta.traittype.layertype.LayerTwoType;
 import abs.frontend.delta.traittype.layertype.MethodFType;
 
 public class TraitInnerPreType extends TraitInnerType {
-    public TraitInnerPreType(MethodImpl met) {
+    public TraitInnerPreType(MethodImpl met, boolean empty) {
         methodName = met.getMethodSig().getName();
-        type = new MethodFType(met);
+        type = new MethodFType(met, empty);
     }
     @Override
     public String toString() {

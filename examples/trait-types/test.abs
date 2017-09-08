@@ -23,8 +23,23 @@ modifies class Testing.C{
         //}  
 }
 
+
+delta D2;
+uses Testing;
+adds class E(){
+    Rat r = 1/2;
+    Unit q(Int i){ skip; }
+}
+
+
+delta D3;
+uses Testing;
+removes class E;
+
 productline Line;
 features Feat;
 delta D when Feat;
+delta D2 when Feat;
+delta D3 when Feat;
 product Default (Feat); 
 

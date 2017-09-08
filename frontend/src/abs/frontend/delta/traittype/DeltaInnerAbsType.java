@@ -4,6 +4,19 @@
  */
 package abs.frontend.delta.traittype;
 
-public abstract class DeltaInnerAbsType extends DeltaInnerType {
+public class DeltaInnerAbsType extends DeltaInnerType {
 
+    private String className;
+    
+    public DeltaInnerAbsType(String name) {
+        className = name;
+    }
+
+    public void add(TraitInnerType inType){
+    }
+
+    @Override
+    public String toString() {
+        return className + " : ABS";
+    }
 }

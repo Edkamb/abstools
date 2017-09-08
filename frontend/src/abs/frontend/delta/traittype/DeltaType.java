@@ -6,9 +6,11 @@ package abs.frontend.delta.traittype;
 
 import java.util.HashMap;
 
+import abs.frontend.ast.AddClassModifier;
 import abs.frontend.ast.AddMethodModifier;
 import abs.frontend.ast.DeltaDecl;
 import abs.frontend.ast.DeltaTraitModifier;
+import abs.frontend.ast.List;
 import abs.frontend.ast.MethodImpl;
 import abs.frontend.ast.MethodModifier;
 import abs.frontend.ast.MethodSig;
@@ -16,6 +18,7 @@ import abs.frontend.ast.Modifier;
 import abs.frontend.ast.ModifyClassModifier;
 import abs.frontend.ast.ModifyMethodModifier;
 import abs.frontend.ast.ModuleModifier;
+import abs.frontend.ast.RemoveClassModifier;
 import abs.frontend.ast.RemoveMethodModifier;
 
 public class DeltaType {
@@ -25,20 +28,36 @@ public class DeltaType {
         for (ModuleModifier modMod : deltaDecl.getModuleModifiers()) {
             if(modMod instanceof ModifyClassModifier){
                 ModifyClassModifier classMod = (ModifyClassModifier)modMod;
-                preType = new DeltaInnerPreType(((ModifyClassModifier) modMod).getClassDecl());
-                postType = new DeltaInnerPreType(((ModifyClassModifier) modMod).getClassDecl());
-                for (Modifier classSubMod : classMod.getModifiers()) {
-                   if(classSubMod instanceof DeltaTraitModifier){
-                        DeltaTraitModifier traitMod = (DeltaTraitModifier)classSubMod;
-                        handleMethodModifier(traitMod.getMethodModifier());
-                   } else if (classSubMod instanceof MethodModifier){
-                       handleMethodModifier((MethodModifier) classSubMod);
-                   }
-                }
+                preType = new DeltaInnerPreType(classMod.getClassDecl(), true);
+                postType = new DeltaInnerPreType(classMod.getClassDecl(), true);                
+                handleAllModifiers(classMod.getModifiers());
+            }
+            if(modMod instanceof AddClassModifier){
+                AddClassModifier classMod = (AddClassModifier)modMod;
+                preType = new DeltaInnerAbsType(classMod.getClassDecl().getName());
+                postType = new DeltaInnerPreType(classMod.getClassDecl(), false);                
+               // handleAllModifiers(classMod.get);
+            }
+            if(modMod instanceof RemoveClassModifier){
+                RemoveClassModifier classMod = (RemoveClassModifier)modMod;
+                preType = new DeltaInnerPreType(classMod.getName());
+                postType = new DeltaInnerAbsType(classMod.getName());                
+               // handleAllModifiers(classMod.get);
             }
         }
     }
     
+    private void handleAllModifiers(List<Modifier> modifiers) {                
+        for (Modifier classSubMod : modifiers) {
+            if(classSubMod instanceof DeltaTraitModifier){
+                DeltaTraitModifier traitMod = (DeltaTraitModifier)classSubMod;
+                handleMethodModifier(traitMod.getMethodModifier());
+           } else if (classSubMod instanceof MethodModifier){
+               handleMethodModifier((MethodModifier) classSubMod);
+           }
+        }        
+    }
+
     public void handleMethodModifier(MethodModifier classSubMod){ 
         if(classSubMod instanceof RemoveMethodModifier){
             for (MethodSig sig : ((RemoveMethodModifier)classSubMod).getMethodSigs()) {
@@ -49,20 +68,22 @@ public class DeltaType {
         } else if(classSubMod instanceof AddMethodModifier){
             MethodImpl impl = ((AddMethodModifier)classSubMod).getMethodImpl();
             TraitInnerAbsType abs = new TraitInnerAbsType(impl.getMethodSig());
-            TraitInnerPreType pre = new TraitInnerPreType(impl);
+            TraitInnerPreType pre = new TraitInnerPreType(impl, true);
             preType.add(abs);
             postType.add(pre);
             postType.add(abs);
         } else if(classSubMod instanceof ModifyMethodModifier){
             MethodImpl impl = ((ModifyMethodModifier)classSubMod).getMethodImpl();
-            TraitInnerPreType pre = new TraitInnerPreType(impl);
+            TraitInnerPreType pre = new TraitInnerPreType(impl, true);
+            TraitInnerPreType post = new TraitInnerPreType(impl, false);
             preType.add(pre);
-            postType.add(pre);
+            postType.add(post);
         } 
         
     }
     private DeltaInnerType preType;  
     private DeltaInnerType postType; 
+    
     @Override
     public String toString() {
         return preType + " --> " + postType;

@@ -8,15 +8,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import abs.frontend.ast.ClassDecl;
+import abs.frontend.ast.MethodImpl;
 
 public class DeltaInnerPreType extends DeltaInnerType {
     private String className;
     private List<TraitInnerType> inner = new ArrayList<>();
     
-    public DeltaInnerPreType(ClassDecl decl){
+    public DeltaInnerPreType(ClassDecl decl, boolean empty){
         className = decl.getName();
+        if(!empty)
+            for (MethodImpl met : decl.getMethods()) {
+                inner.add(new TraitInnerPreType(met, empty));
+            }
     }
     
+    public DeltaInnerPreType(String name) {
+        className = name;
+    }
+
     public void add(TraitInnerType inType){
         inner.add(inType);
     }

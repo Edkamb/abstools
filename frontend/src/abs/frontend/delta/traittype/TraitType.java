@@ -14,7 +14,7 @@ public class TraitType {
     List<TraitInnerType> inner = new ArrayList<>();
     public TraitType(TraitSetExpr trait){
         for (MethodImpl met : trait.getMethodImpls()) {
-            inner.add(new TraitInnerPreType(met));
+            inner.add(new TraitInnerPreType(met, false));
         }
     }
     @Override

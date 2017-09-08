@@ -4,12 +4,8 @@
  */
 package abs.frontend.delta.traittype.layertype;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import abs.frontend.ast.MethodImpl;
 import abs.frontend.ast.MethodSig;
-import abs.frontend.delta.traittype.dependency.FlatteningDependency;
 
 public class MethodFType extends LayerTwoType {
     private MethodSig sig;
@@ -18,8 +14,8 @@ public class MethodFType extends LayerTwoType {
     public String toString() {
         return "sig=" + sig + ", usesOrig=" + usesOrig + ", deps=" + dependencies;
     }
-    public MethodFType(MethodImpl met) {
-        traverse(met.getBlock());
+    public MethodFType(MethodImpl met, boolean empty) {
+        if(!empty)traverse(met.getBlock());
         this.sig = met.getMethodSig();
     }
 
