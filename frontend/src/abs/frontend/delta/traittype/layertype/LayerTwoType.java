@@ -9,13 +9,10 @@ import java.util.Set;
 
 import abs.frontend.ast.ASTNode;
 import abs.frontend.ast.Call;
-import abs.frontend.ast.DataTypeUse;
 import abs.frontend.ast.FieldUse;
 import abs.frontend.ast.ThisExp;
 import abs.frontend.ast.TypeUse;
 import abs.frontend.ast.UnresolvedTypeUse;
-import abs.frontend.ast.VarDecl;
-import abs.frontend.ast.VarDeclStmt;
 import abs.frontend.ast.VarUse;
 import abs.frontend.delta.traittype.dependency.FlatteningDependency;
 import abs.frontend.delta.traittype.dependency.SubTypeDep;
@@ -25,6 +22,7 @@ import abs.frontend.delta.traittype.dependency.TypeOfMethod;
 public class LayerTwoType {
 
     protected Set<FlatteningDependency> dependencies = new HashSet<>();
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected void traverse(ASTNode<ASTNode> node){
         //System.out.println(node);
         //System.out.println(node.getClass());

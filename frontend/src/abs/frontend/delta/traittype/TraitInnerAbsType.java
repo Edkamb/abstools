@@ -6,6 +6,9 @@ package abs.frontend.delta.traittype;
 
 import abs.frontend.ast.MethodSig;
 
+/**
+ *   An inner type of a trait type: an absent method flattening type
+ */
 public class TraitInnerAbsType extends TraitInnerType {
     public TraitInnerAbsType(MethodSig sig) {
         methodName = sig.getName();

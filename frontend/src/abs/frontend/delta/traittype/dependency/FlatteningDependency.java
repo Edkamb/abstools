@@ -7,9 +7,8 @@ package abs.frontend.delta.traittype.dependency;
 import java.util.HashMap;
 
 import abs.frontend.ast.FieldUse;
-import abs.frontend.typechecker.Type;
 
-//TODO: proper factory
+//TODO: implement equals/hashCode methods instead
 public class FlatteningDependency {
     private static HashMap<String, FieldDep> fields = new HashMap<>();
     private static HashMap<String, TypeDep> types = new HashMap<>();

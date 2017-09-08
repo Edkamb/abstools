@@ -20,4 +20,8 @@ public class ClassFType extends LayerOneType {
     public void addInner(TraitInnerType inner){
         content.add(inner);
     }
+    @Override
+    public String toString() {
+        return "ClassFType [className=" + className + ", content=" + content + "]";
+    }
 }

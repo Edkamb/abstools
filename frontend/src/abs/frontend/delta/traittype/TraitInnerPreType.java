@@ -8,6 +8,9 @@ import abs.frontend.ast.MethodImpl;
 import abs.frontend.delta.traittype.layertype.LayerTwoType;
 import abs.frontend.delta.traittype.layertype.MethodFType;
 
+/**
+ *   An inner type of a trait type: a present method flattening type
+ */
 public class TraitInnerPreType extends TraitInnerType {
     public TraitInnerPreType(MethodImpl met, boolean empty) {
         methodName = met.getMethodSig().getName();

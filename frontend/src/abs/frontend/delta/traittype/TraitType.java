@@ -10,6 +10,9 @@ import java.util.List;
 import abs.frontend.ast.MethodImpl;
 import abs.frontend.ast.TraitSetExpr;
 
+/**
+ *   The type of a trait. Generate this after collapsing and resolving all trait references.
+ */
 public class TraitType {
     List<TraitInnerType> inner = new ArrayList<>();
     public TraitType(TraitSetExpr trait){

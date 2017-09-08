@@ -21,8 +21,14 @@ import abs.frontend.ast.ModuleModifier;
 import abs.frontend.ast.RemoveClassModifier;
 import abs.frontend.ast.RemoveMethodModifier;
 
+/**
+ *   The type of a delta.
+ *   Its inner types describe modified classes.
+ */
+
 public class DeltaType {
     public DeltaType(DeltaDecl deltaDecl, HashMap<String, TraitType> tTypes) {
+        //we have to do this anyway
         deltaDecl.collapseTraitModifiers();
         
         for (ModuleModifier modMod : deltaDecl.getModuleModifiers()) {
@@ -35,14 +41,12 @@ public class DeltaType {
             if(modMod instanceof AddClassModifier){
                 AddClassModifier classMod = (AddClassModifier)modMod;
                 preType = new DeltaInnerAbsType(classMod.getClassDecl().getName());
-                postType = new DeltaInnerPreType(classMod.getClassDecl(), false);                
-               // handleAllModifiers(classMod.get);
+                postType = new DeltaInnerPreType(classMod.getClassDecl(), false);   
             }
             if(modMod instanceof RemoveClassModifier){
                 RemoveClassModifier classMod = (RemoveClassModifier)modMod;
                 preType = new DeltaInnerPreType(classMod.getName());
-                postType = new DeltaInnerAbsType(classMod.getName());                
-               // handleAllModifiers(classMod.get);
+                postType = new DeltaInnerAbsType(classMod.getName());           
             }
         }
     }

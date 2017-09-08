@@ -5,6 +5,9 @@
 package abs.frontend.delta.traittype;
 
 //TODO: better solution for ABS singleton
+/**
+ *   An inner type of a trait type: an absent/present method flattening type
+ */
 public class TraitInnerType {
     public final static TraitInnerType ABS = new TraitInnerType();
     public String toString(){ return "ABS"; }
