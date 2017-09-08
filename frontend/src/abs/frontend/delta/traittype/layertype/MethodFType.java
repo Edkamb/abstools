@@ -15,7 +15,7 @@ public class MethodFType extends LayerTwoType {
         return "sig=" + sig + ", usesOrig=" + usesOrig + ", deps=" + dependencies;
     }
     public MethodFType(MethodImpl met, boolean empty) {
-        if(!empty)traverse(met.getBlock());
+        if(!empty)traverse(met);
         this.sig = met.getMethodSig();
     }
 

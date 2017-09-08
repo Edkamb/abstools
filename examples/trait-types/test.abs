@@ -28,7 +28,17 @@ delta D2;
 uses Testing;
 adds class E(){
     Rat r = 1/2;
-    Unit q(Int i){ skip; }
+    Unit q(Int i){ 
+        Rat f = 1/8; 
+        this.r = i/this.s; 
+        O other = new OC();
+        other!wtf();
+    }
+    Int asd(Int i){ 
+        Fut<Unit> f = this!q(i*100); 
+        f.get; 
+        return i;
+    }
 }
 
 

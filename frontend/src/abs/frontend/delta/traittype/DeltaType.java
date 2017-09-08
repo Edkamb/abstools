@@ -86,6 +86,6 @@ public class DeltaType {
     
     @Override
     public String toString() {
-        return preType + " --> " + postType;
+        return preType + "\n\t-->\n  " + postType;
     }
 }
