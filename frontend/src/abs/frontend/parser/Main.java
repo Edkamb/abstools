@@ -257,10 +257,12 @@ public class Main {
             return;
         }
 
+
         m.evaluateAllProductDeclarations(); // resolve ProductExpressions to simple sets of features
         rewriteModel(m, product);
         m.flattenTraitOnly();
-        m.collapseTraitModifiers();
+        m.collapseTraitModifiers(); 
+        m.analyzeSPL();
 
         // check PL before flattening
         if (checkspl)

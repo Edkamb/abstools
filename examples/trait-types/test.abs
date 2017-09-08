@@ -1,0 +1,30 @@
+module Testing;
+
+interface I { Unit m(); }
+class C implements I {
+	Int i = 0;
+	Int j = 0;
+    uses T;
+    Unit n(){ this.j = this.i + 1; }
+}
+trait T = { Unit m(){ this.i = this.i + 1;}}
+{
+
+}
+
+
+delta D;
+modifies class Testing.C{
+        adds Int i = 0;
+        removes Unit n();
+        modifies T 
+        //{ 
+        //    Unit m(){ println("a");}
+        //}  
+}
+
+productline Line;
+features Feat;
+delta D when Feat;
+product Default (Feat); 
+

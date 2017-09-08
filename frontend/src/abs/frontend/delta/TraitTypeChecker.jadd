@@ -1,0 +1,32 @@
+
+import abs.frontend.delta.traittype.TraitType;
+
+aspect TraitTypeChecker {
+    public void Model.analyzeSPL() {
+        System.out.println("I do stuff!");   
+        System.out.println();
+        
+        //collect all Traits
+        LinkedList<TraitDecl> list = new LinkedList<>();
+        for (Decl decl : getDecls()) {
+            if(decl instanceof TraitDecl){
+                list.add((TraitDecl)decl);
+            }
+        }
+        HashMap<String, TraitType> tTypes = new HashMap<>();
+        for (TraitDecl traitDecl : list) {
+            System.out.println("found trait: "+traitDecl.getName());
+            TraitType tt = new TraitType((TraitSetExpr) traitDecl.getTraitExpr());
+            tTypes.put(traitDecl.getName(), tt);
+            System.out.println("  type: "+tt);
+        }
+        for (DeltaDecl deltaDecl : getDeltaDecls()) {
+            System.out.println("found delta: "+deltaDecl.getName());
+            DeltaType dt = new DeltaType(deltaDecl, tTypes);
+            System.out.println("  type: "+dt);
+        }
+
+        System.out.println();
+        System.out.println("I finished!");     
+    }
+ }
