@@ -13,9 +13,14 @@ import abs.frontend.ast.DataTypeUse;
 import abs.frontend.ast.FieldUse;
 import abs.frontend.ast.ThisExp;
 import abs.frontend.ast.TypeUse;
+import abs.frontend.ast.UnresolvedTypeUse;
+import abs.frontend.ast.VarDecl;
 import abs.frontend.ast.VarDeclStmt;
 import abs.frontend.ast.VarUse;
 import abs.frontend.delta.traittype.dependency.FlatteningDependency;
+import abs.frontend.delta.traittype.dependency.SubTypeDep;
+import abs.frontend.delta.traittype.dependency.TypeOfLocation;
+import abs.frontend.delta.traittype.dependency.TypeOfMethod;
 
 public class LayerTwoType {
 
@@ -40,10 +45,20 @@ public class LayerTwoType {
                 dependencies.add(FlatteningDependency.getMethodDep(call.getMethod()));
             }
             if(call.getCallee() instanceof VarUse){
-              /*  VarUse vUse = (VarUse)call.getCallee();
-                vUse.getDecl();
-                System.out.println(vUse.getDecl());
-                dependencies.add(FlatteningDependency.getMethodDep(call.getMethod())); */
+                VarUse vUse = (VarUse)call.getCallee();
+                if(vUse.getDecl().getChild(0) instanceof UnresolvedTypeUse){
+                    UnresolvedTypeUse use = (UnresolvedTypeUse)vUse.getDecl().getChild(0);
+                    System.out.println(use);
+                    TypeOfLocation locT = new TypeOfLocation(use.getName());
+                    TypeOfMethod metT = new TypeOfMethod(call.getMethod());
+                    dependencies.add(new SubTypeDep(locT, metT));
+                }
+            }
+            if(call.getCallee() instanceof FieldUse){
+                FieldUse vUse = (FieldUse)call.getCallee();
+                TypeOfLocation locT = new TypeOfLocation(vUse.getName());
+                TypeOfMethod metT = new TypeOfMethod(call.getMethod());
+                dependencies.add(new SubTypeDep(locT, metT));
             }
         }
     }

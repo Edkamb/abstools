@@ -32,6 +32,7 @@ adds class E(){
         Rat f = 1/8; 
         this.r = i/this.s; 
         O other = new OC();
+        this.aField!meth();
         other!wtf();
     }
     Int asd(Int i){ 
