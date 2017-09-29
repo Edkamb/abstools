@@ -4,6 +4,7 @@
  */
 package abs.frontend.delta.traittype.layertype;
 
+import abs.frontend.analyser.SemanticConditionList;
 import abs.frontend.ast.MethodImpl;
 import abs.frontend.ast.MethodSig;
 
@@ -17,6 +18,15 @@ public class MethodFType extends LayerTwoType {
     public MethodFType(MethodImpl met, boolean empty) {
         if(!empty)traverse(met);
         this.sig = met.getMethodSig();
+        SemanticConditionList s = new SemanticConditionList();
+        try {
+            met.getBlock().partialTypeCheck(s);
+        } catch (Exception e){
+      //      System.out.println(e);
+        } finally {
+      //      System.out.println("semantic: ");
+      //      System.out.println(s);
+        }
     }
 
 }

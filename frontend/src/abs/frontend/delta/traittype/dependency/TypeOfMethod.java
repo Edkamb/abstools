@@ -18,6 +18,6 @@ public class TypeOfMethod extends TypeOfDependency{
 
     @Override
     public String toString() {
-        return name;
+        return "("+name+")";
     }
 }

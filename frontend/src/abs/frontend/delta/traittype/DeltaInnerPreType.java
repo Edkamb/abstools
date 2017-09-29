@@ -20,10 +20,21 @@ public class DeltaInnerPreType extends DeltaInnerType {
             for (MethodImpl met : decl.getMethods()) {
                 inner.add(new TraitInnerPreType(met, empty));
             }
+        else
+            inner.add(new TraitInnerVarType());
+    }
+    
+    public DeltaInnerPreType(ClassDecl decl, DeltaInnerPreType previous){
+        className = decl.getName();
+        inner.add(previous.inner.get(0));
+        /*for (MethodImpl met : decl.getMethods()) {
+            inner.add(new TraitInnerPreType(met, false));
+        }*/
     }
     
     public DeltaInnerPreType(String name) {
         className = name;
+        inner.add(new TraitInnerVarType());
     }
 
     public void add(TraitInnerType inType){

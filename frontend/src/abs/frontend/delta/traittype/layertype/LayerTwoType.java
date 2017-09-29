@@ -46,7 +46,7 @@ public class LayerTwoType {
                 VarUse vUse = (VarUse)call.getCallee();
                 if(vUse.getDecl().getChild(0) instanceof UnresolvedTypeUse){
                     UnresolvedTypeUse use = (UnresolvedTypeUse)vUse.getDecl().getChild(0);
-                    System.out.println(use);
+                  //  System.out.println(use);
                     TypeOfLocation locT = new TypeOfLocation(use.getName());
                     TypeOfMethod metT = new TypeOfMethod(call.getMethod());
                     dependencies.add(new SubTypeDep(locT, metT));

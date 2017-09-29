@@ -6,6 +6,7 @@ package abs.frontend.delta.traittype;
 
 import abs.frontend.ast.MethodImpl;
 import abs.frontend.delta.traittype.layertype.LayerTwoType;
+import abs.frontend.delta.traittype.layertype.LayerTwoVarType;
 import abs.frontend.delta.traittype.layertype.MethodFType;
 
 /**
@@ -14,7 +15,10 @@ import abs.frontend.delta.traittype.layertype.MethodFType;
 public class TraitInnerPreType extends TraitInnerType {
     public TraitInnerPreType(MethodImpl met, boolean empty) {
         methodName = met.getMethodSig().getName();
-        type = new MethodFType(met, empty);
+        if(empty)
+            type = new LayerTwoVarType();            
+        else
+            type = new MethodFType(met, empty);
     }
     @Override
     public String toString() {

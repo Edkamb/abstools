@@ -35,7 +35,8 @@ public class DeltaType {
             if(modMod instanceof ModifyClassModifier){
                 ModifyClassModifier classMod = (ModifyClassModifier)modMod;
                 preType = new DeltaInnerPreType(classMod.getClassDecl(), true);
-                postType = new DeltaInnerPreType(classMod.getClassDecl(), true);                
+                postType = new DeltaInnerPreType(classMod.getClassDecl(), (DeltaInnerPreType)preType);        //no class decl
+                //postType = new DeltaInnerPreType(classMod.getClassDecl(), true);                
                 handleAllModifiers(classMod.getModifiers());
             }
             if(modMod instanceof AddClassModifier){

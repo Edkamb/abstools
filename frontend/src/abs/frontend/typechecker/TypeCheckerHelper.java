@@ -78,6 +78,17 @@ public class TypeCheckerHelper {
         }
     }
 
+    public static void partiallyCheckAssignment(SemanticConditionList l, ASTNode<?> n, VarOrFieldUse lhs, Type lht, Exp rhs, Type rht) {
+        
+        if(rht != null && !rht.isAssignableTo(lht)){
+            l.add(new TypeError(n, ErrorMessage.CANNOT_ASSIGN, rht, lht));            
+        } else if(lht != null){
+            System.out.println("dep: "+lhs+" subtype of "+rht);            
+        } else if(rhs instanceof VarOrFieldUse){
+            System.out.println("dep: "+lhs+" subtype of the type of "+rhs);                
+        }
+    }
+
     public static void typeCheckParamList(SemanticConditionList l, HasParams params) {
         Set<String> names = new HashSet<String>();
         for (ParamDecl d : params.getParams()) {
@@ -519,6 +530,32 @@ public class TypeCheckerHelper {
         b.getRight().assertHasType(e, t);
         b.getLeft().typeCheck(e);
         b.getRight().typeCheck(e);
+    }
+
+    public static void partialTypeCheckBinary(SemanticConditionList e, Binary b, Type t) {
+        // Special case: can also "add" strings.
+        Type rt = null;
+        try {
+            rt = b.getRight().getType();
+        } catch (Exception e2) {
+            System.out.println("dep: "+b.getRight()+" must be subtype of "+t);
+        }
+        Type lt = null;
+        try {
+            lt = b.getLeft().getType();
+        } catch (Exception e2) {        
+            System.out.println("dep: "+b.getLeft()+" must be subtype of "+t);
+        }
+        if(rt.isUnknownType()){
+            System.out.println("dep: "+b.getRight()+" must be subtype of "+t);            
+        }
+
+        if(lt.isUnknownType()){
+            System.out.println("dep: "+b.getLeft()+" must be subtype of "+t);            
+        }
+
+        b.getLeft().partialTypeCheck(e);
+        b.getRight().partialTypeCheck(e);
     }
 
     /**
