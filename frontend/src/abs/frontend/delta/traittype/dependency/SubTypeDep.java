@@ -5,8 +5,8 @@
 package abs.frontend.delta.traittype.dependency;
 
 public class SubTypeDep extends FlatteningDependency {
-    private TypeOfDependency lhs;
-    private TypeOfDependency rhs;
+    protected TypeOfDependency lhs;
+    protected TypeOfDependency rhs;
     public SubTypeDep(TypeOfDependency lhs, TypeOfDependency rhs) {
         this.lhs = lhs;
         this.rhs = rhs;

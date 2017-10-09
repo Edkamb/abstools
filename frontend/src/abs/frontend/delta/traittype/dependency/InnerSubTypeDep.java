@@ -4,15 +4,14 @@
  */
 package abs.frontend.delta.traittype.dependency;
 
-//models that name must exist as a type
-public class TypeDep extends FlatteningDependency {
+public class InnerSubTypeDep extends SubTypeDep {
 
-    private final String type;
-    public TypeDep(String use){
-        this.type = use;
+    public InnerSubTypeDep(TypeOfDependency lhs, TypeOfDependency rhs) {
+        super(lhs, rhs);
     }
+
     @Override
     public String toString() {
-        return "∃"+type;
+        return lhs +" ⪯⪯ " + rhs;
     }
 }

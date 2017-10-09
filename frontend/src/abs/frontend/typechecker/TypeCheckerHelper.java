@@ -4,18 +4,82 @@
  */
 package abs.frontend.typechecker;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 import abs.common.Constants;
 import abs.frontend.analyser.ErrorMessage;
+import abs.frontend.analyser.SemanticConditionList;
 import abs.frontend.analyser.SemanticError;
 import abs.frontend.analyser.SemanticWarning;
-import abs.frontend.analyser.SemanticConditionList;
 import abs.frontend.analyser.TypeError;
+import abs.frontend.ast.ASTNode;
+import abs.frontend.ast.AmbiguousDecl;
+import abs.frontend.ast.AttrAssignment;
+import abs.frontend.ast.Binary;
+import abs.frontend.ast.CompilationUnit;
+import abs.frontend.ast.Const;
+import abs.frontend.ast.ConstructorPattern;
+import abs.frontend.ast.DataConstructor;
+import abs.frontend.ast.DataConstructorExp;
+import abs.frontend.ast.DataTypeDecl;
+import abs.frontend.ast.DataTypeUse;
+import abs.frontend.ast.Decl;
+import abs.frontend.ast.DeltaClause;
+import abs.frontend.ast.DeltaDecl;
+import abs.frontend.ast.DeltaID;
+import abs.frontend.ast.DeltaParamDecl;
+import abs.frontend.ast.Deltaparam;
+import abs.frontend.ast.Deltaspec;
+import abs.frontend.ast.ExceptionDecl;
+import abs.frontend.ast.Exp;
+import abs.frontend.ast.Export;
+import abs.frontend.ast.Feature;
+import abs.frontend.ast.FieldUse;
+import abs.frontend.ast.FnApp;
+import abs.frontend.ast.FromExport;
+import abs.frontend.ast.FromImport;
+import abs.frontend.ast.GetExp;
+import abs.frontend.ast.HasActualParams;
+import abs.frontend.ast.HasParams;
+import abs.frontend.ast.HasType;
+import abs.frontend.ast.Import;
 import abs.frontend.ast.List;
-import abs.frontend.ast.*;
+import abs.frontend.ast.MethodSig;
+import abs.frontend.ast.Model;
+import abs.frontend.ast.ModuleDecl;
+import abs.frontend.ast.Name;
+import abs.frontend.ast.NamedExport;
+import abs.frontend.ast.NamedImport;
+import abs.frontend.ast.ParamDecl;
+import abs.frontend.ast.ParametricDataTypeDecl;
+import abs.frontend.ast.ParametricDataTypeUse;
+import abs.frontend.ast.ParametricFunctionDecl;
+import abs.frontend.ast.Pattern;
+import abs.frontend.ast.ProductDecl;
+import abs.frontend.ast.PureExp;
+import abs.frontend.ast.StarExport;
+import abs.frontend.ast.StarImport;
+import abs.frontend.ast.TypeSynDecl;
+import abs.frontend.ast.TypeUse;
+import abs.frontend.ast.UpdateDecl;
+import abs.frontend.ast.Value;
+import abs.frontend.ast.VarDeclStmt;
+import abs.frontend.ast.VarOrFieldDecl;
+import abs.frontend.ast.VarOrFieldUse;
+import abs.frontend.delta.traittype.dependency.DependencyList;
+import abs.frontend.delta.traittype.dependency.InnerSubTypeDep;
+import abs.frontend.delta.traittype.dependency.SubTypeDep;
+import abs.frontend.delta.traittype.dependency.TypeIdentity;
+import abs.frontend.delta.traittype.dependency.TypeOfDependency;
+import abs.frontend.delta.traittype.dependency.TypeOfLocation;
 import abs.frontend.parser.SourcePosition;
-import com.google.common.collect.ImmutableSet;
 
 public class TypeCheckerHelper {
 
@@ -71,22 +135,45 @@ public class TypeCheckerHelper {
         typeCheckMatchingParamsPattern(e, p, c);
     }
 
-    public static void checkAssignment(SemanticConditionList l, ASTNode<?> n, Type lht, Exp rhte) {
+    public static void checkAssignment(SemanticConditionList l, ASTNode<?> n, Type lht, Exp rhte ) {
         Type te = rhte.getType();
         if (!te.isAssignableTo(lht)) {
             l.add(new TypeError(n, ErrorMessage.CANNOT_ASSIGN, te, lht));
         }
     }
 
-    public static void partiallyCheckAssignment(SemanticConditionList l, ASTNode<?> n, VarOrFieldUse lhs, Type lht, Exp rhs, Type rht) {
-        
-        if(rht != null && !rht.isAssignableTo(lht)){
-            l.add(new TypeError(n, ErrorMessage.CANNOT_ASSIGN, rht, lht));            
-        } else if(lht != null){
-            System.out.println("dep: "+lhs+" subtype of "+rht);            
-        } else if(rhs instanceof VarOrFieldUse){
-            System.out.println("dep: "+lhs+" subtype of the type of "+rhs);                
+    //TODO: handle case where the future is not directly accessed
+    public static void checkAssignment(SemanticConditionList l, ASTNode<?> n, Type lht, Exp rhte, DependencyList deps) {
+        Type te = rhte.getType();
+        if (!te.isAssignableTo(lht)) {
+            if(rhte instanceof GetExp){
+                GetExp inner = (GetExp) rhte;
+                if(inner.getType().isUnknownType()){
+                    //System.out.println("dep: "+inner.getPureExp()+" must be a future with inner type "+lht);
+                    deps.add(new InnerSubTypeDep(new TypeOfLocation(inner.getPureExp().toString()), new TypeIdentity(lht.toString())));
+                }
+            }
         }
+    }
+
+    public static void partiallyCheckAssignment(SemanticConditionList l, ASTNode<?> n, VarOrFieldUse lhs, Type lht, Exp rhs, Type rht, DependencyList deps) {
+        
+        if(rhs instanceof VarOrFieldUse){
+            deps.add(new SubTypeDep(new TypeOfLocation(lhs.toString()), new TypeOfLocation(rhs.toString())));
+        } else if(rhs instanceof GetExp && lht.isUnknownType() && rht.isUnknownType()){
+           // System.out.println("dep: "+((GetExp)rhs).getPureExp()+ " must have future type with the inner type of "+lhs);
+            deps.add(new InnerSubTypeDep(new TypeOfLocation(((GetExp)rhs).getPureExp().toString()), new TypeIdentity(lhs.toString())));
+        } else if(rhs instanceof GetExp && !lht.isUnknownType() && rht.isUnknownType()){
+            deps.add(new InnerSubTypeDep(new TypeOfLocation(((GetExp)rhs).getPureExp().toString()), TypeOfDependency.futureFor(lht.toString())));
+        } else if(rhs instanceof GetExp && lht.isUnknownType() && !rht.isUnknownType()){
+            //System.out.println("dep: "+lhs+ " subtype of inner type of"+rht);
+            deps.add(new InnerSubTypeDep(new TypeOfLocation(lhs.toString()), new TypeIdentity(rht.toString())));
+        } else if(rht != null && !rht.isAssignableTo(lht)){
+            l.add(new TypeError(n, ErrorMessage.CANNOT_ASSIGN, rht, lht));            
+        } else if(lht != null && !lht.isUnknownType()){
+            //System.out.println("dep: "+lhs+" subtype of "+rht);            
+            deps.add(new SubTypeDep(new TypeOfLocation(lhs.toString()), new TypeIdentity(rht)));
+        } 
     }
 
     public static void typeCheckParamList(SemanticConditionList l, HasParams params) {
@@ -532,30 +619,30 @@ public class TypeCheckerHelper {
         b.getRight().typeCheck(e);
     }
 
-    public static void partialTypeCheckBinary(SemanticConditionList e, Binary b, Type t) {
+    public static void partialTypeCheckBinary(SemanticConditionList e, Binary b, Type t, DependencyList deps) {
         // Special case: can also "add" strings.
         Type rt = null;
         try {
             rt = b.getRight().getType();
         } catch (Exception e2) {
-            System.out.println("dep: "+b.getRight()+" must be subtype of "+t);
+            deps.add(new SubTypeDep(new TypeOfLocation(b.getRight().toString()), new TypeIdentity(t)));
         }
         Type lt = null;
         try {
             lt = b.getLeft().getType();
         } catch (Exception e2) {        
-            System.out.println("dep: "+b.getLeft()+" must be subtype of "+t);
+            deps.add(new SubTypeDep(new TypeOfLocation(b.getLeft().toString()), new TypeIdentity(t)));
         }
         if(rt.isUnknownType()){
-            System.out.println("dep: "+b.getRight()+" must be subtype of "+t);            
+            deps.add(new SubTypeDep(new TypeOfLocation(b.getRight().toString()), new TypeIdentity(t)));
         }
 
         if(lt.isUnknownType()){
-            System.out.println("dep: "+b.getLeft()+" must be subtype of "+t);            
+            deps.add(new SubTypeDep(new TypeOfLocation(b.getLeft().toString()), new TypeIdentity(t)));
         }
 
-        b.getLeft().partialTypeCheck(e);
-        b.getRight().partialTypeCheck(e);
+        b.getLeft().partialTypeCheck(e, deps);
+        b.getRight().partialTypeCheck(e, deps);
     }
 
     /**

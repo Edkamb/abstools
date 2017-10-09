@@ -4,20 +4,12 @@
  */
 package abs.frontend.delta.traittype.dependency;
 
-public class MethodDep extends FlatteningDependency {
+//models that name must exist as a class
+public class ClassDep extends FlatteningDependency {
 
-    protected final String type;
-    protected final int params;
-    protected HasMethodDep at = null;
-    public HasMethodDep getAt() {
-        return at;
-    }
-    public void setAt(HasMethodDep at) {
-        this.at = at;
-    }
-    public MethodDep(String use, int params){
+    private final String type;
+    public ClassDep(String use){
         this.type = use;
-        this.params = params;
     }
     @Override
     public int hashCode() {
@@ -34,7 +26,7 @@ public class MethodDep extends FlatteningDependency {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        MethodDep other = (MethodDep) obj;
+        ClassDep other = (ClassDep) obj;
         if (type == null) {
             if (other.type != null)
                 return false;
@@ -44,7 +36,7 @@ public class MethodDep extends FlatteningDependency {
     }
     @Override
     public String toString() {
-        return type+"_"+params;
+        return "∃"+type;
     }
 
 }

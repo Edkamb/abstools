@@ -8,19 +8,20 @@ import abs.frontend.typechecker.*;
 import abs.frontend.typechecker.TypeCheckerHelper;
 
 import java.util.HashMap;
+import abs.frontend.delta.traittype.dependency.*;
 
 aspect PartialTypeChecker {
 
-    public void Block.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
+    public void Block.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
         for (Stmt s : getStmts()) {
-            s.partialTypeCheck(e);
+            s.partialTypeCheck(e,deps);
         }
     }
-    public void MethodImpl.partialTypeCheck(SemanticConditionList e) {
+    public void MethodImpl.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         Block b = getBlock();
         MethodSig sig = getMethodSig();
-        b.partialTypeCheck(e);
+        b.partialTypeCheck(e,deps);
 
         if (sig.getName().equals("run")) {
             TypeCheckerHelper.typeCheckRunMethodSig(e, sig);
@@ -44,16 +45,15 @@ aspect PartialTypeChecker {
 
     }
 
-    public void VarDecl.partialTypeCheck(SemanticConditionList e) {
+    public void VarDecl.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         int nerrors = e.getErrorCount();
-        getAccess().partialTypeCheck(e);
+        getAccess().partialTypeCheck(e,deps);
     //    if (e.getErrorCount() > nerrors) return;
 
         Type t = getAccess().getType();
         if (hasInitExp()) {
-            getInitExp().partialTypeCheck(e);
-            if (e.getErrorCount() > nerrors) return;
-            TypeCheckerHelper.checkAssignment(e,this,t,getInitExp());
+            getInitExp().partialTypeCheck(e,deps);
+            TypeCheckerHelper.checkAssignment(e,this,t,getInitExp(),deps);
         } else {
             if (!t.isReferenceType() && !t.isFutureType()) {
                 e.add(new TypeError(this, ErrorMessage.VAR_INIT_REQUIRED, new String[0]));
@@ -61,16 +61,16 @@ aspect PartialTypeChecker {
         }
     }
 
-    public void FieldDecl.partialTypeCheck(SemanticConditionList e) {
+    public void FieldDecl.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         int nerrors = e.getErrorCount();
-        getAccess().partialTypeCheck(e);
+        getAccess().partialTypeCheck(e,deps);
         if (e.getErrorCount() > nerrors) return;
 
         Type t = getAccess().getType();
         if (hasInitExp()) {
-            getInitExp().partialTypeCheck(e);
+            getInitExp().partialTypeCheck(e,deps);
             if (e.getErrorCount() > nerrors) return;
-            TypeCheckerHelper.checkAssignment(e,this,t,getInitExp());
+            TypeCheckerHelper.checkAssignment(e,this,t,getInitExp(),deps);
         } else {
             if (!t.isReferenceType() && !t.isFutureType()) {
                 e.add(new TypeError(this, ErrorMessage.FIELD_INIT_REQUIRED, new String[0]));
@@ -78,32 +78,32 @@ aspect PartialTypeChecker {
         }
     }
 
-    public void ParamDecl.partialTypeCheck(SemanticConditionList e) {
-        getAccess().partialTypeCheck(e);
+    public void ParamDecl.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        getAccess().partialTypeCheck(e,deps);
     }
 
 
 
     // STMTS
 
-    public void Stmt.partialTypeCheck(SemanticConditionList e) {
+    public void Stmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
     }
 
-    public void IncompleteStmt.partialTypeCheck(SemanticConditionList e) {
+    public void IncompleteStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         // ignore
     }
-    public void ExpressionStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getExp().partialTypeCheck(e);
+    public void ExpressionStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getExp().partialTypeCheck(e,deps);
     }
 
-    public void VarDeclStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getVarDecl().partialTypeCheck(e);
+    public void VarDeclStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getVarDecl().partialTypeCheck(e,deps);
         TypeCheckerHelper.checkForDuplicatesOfVarDecl(e, this);
     }
-    public void AssignStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
+    public void AssignStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
         Type rht = null;
         try {
             rht = getValue().getType();
@@ -116,18 +116,15 @@ aspect PartialTypeChecker {
         }
 
         int nerrors = e.getErrorCount();
-        getValue().partialTypeCheck(e);
-        getVar().partialTypeCheck(e);
+        getValue().partialTypeCheck(e,deps);
+        getVar().partialTypeCheck(e,deps);
 
-        if (e.getErrorCount() > nerrors){
-            return;
-        }
-        TypeCheckerHelper.partiallyCheckAssignment(e,this,getVar(),lht,getValue(),rht);
+        TypeCheckerHelper.partiallyCheckAssignment(e,this,getVar(),lht,getValue(),rht,deps);
     }
-    public void MoveCogToStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
+    public void MoveCogToStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
         int nerrors = e.getErrorCount();
-        getTarget().partialTypeCheck(e);
+        getTarget().partialTypeCheck(e,deps);
         if (e.getErrorCount() > nerrors) return;
         Type t = getTarget().getType();
         Decl d = t.getDecl();
@@ -140,8 +137,8 @@ aspect PartialTypeChecker {
         }
     }
 
-    public void ReturnStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
+    public void ReturnStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
         MethodImpl m = getContextMethod();
         Type lht = getModel().getUnitType();
         Block block = getContextBlock();
@@ -156,7 +153,7 @@ aspect PartialTypeChecker {
             e.add(new TypeError(this,ErrorMessage.CANNOT_ASSIGN,rht,lht));
         }
 
-        getRetExp().partialTypeCheck(e);
+        getRetExp().partialTypeCheck(e,deps);
 
         Stmt lastStmt = block.getStmt(block.getNumStmt()-1);
         if (lastStmt != this) {
@@ -164,44 +161,44 @@ aspect PartialTypeChecker {
         }
     }
 
-    public void AwaitStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getGuard().partialTypeCheck(e);
+    public void AwaitStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getGuard().partialTypeCheck(e,deps);
     }
 
-    public void SuspendStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
+    public void SuspendStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
     }
 
-    public void DurationStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getMin().partialTypeCheck(e);
-        getMax().partialTypeCheck(e);
+    public void DurationStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getMin().partialTypeCheck(e,deps);
+        getMax().partialTypeCheck(e,deps);
         getMin().assertHasType(e, getModel().getRatType());
         getMax().assertHasType(e, getModel().getRatType());
     }
 
-    public void IfStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getCondition().partialTypeCheck(e);
+    public void IfStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getCondition().partialTypeCheck(e,deps);
         getCondition().assertHasType(e,getModel().getBoolType());
-        getThen().partialTypeCheck(e);
+        getThen().partialTypeCheck(e,deps);
         if (hasElse())
-            getElse().partialTypeCheck(e);
+            getElse().partialTypeCheck(e,deps);
 
     }
 
-    public void WhileStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getCondition().partialTypeCheck(e);
+    public void WhileStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getCondition().partialTypeCheck(e,deps);
         getCondition().assertHasType(e,getModel().getBoolType());
-        getBody().partialTypeCheck(e);
+        getBody().partialTypeCheck(e,deps);
     }
 
-    public void ForeachStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
+    public void ForeachStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
         
-        getListExp().partialTypeCheck(e);
+        getListExp().partialTypeCheck(e,deps);
         // assertHasType() is too specific -- we need to check that ListExp is
         // a list, not its specific type (List<Int>)
         if (!getListExp().getType().isUnknownType()
@@ -211,12 +208,12 @@ aspect PartialTypeChecker {
                                 getModel().getListType().getDecl().qualifiedName(),
                                 getListExp().getType().getDecl().qualifiedName()));
         }
-        getBody().partialTypeCheck(e);
+        getBody().partialTypeCheck(e,deps);
     }
 
-    public void CaseStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getExpr().partialTypeCheck(e);
+    public void CaseStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getExpr().partialTypeCheck(e,deps);
         Type et = getExpr().getType();
         if (!et.isDataType()) {
            e.add(new TypeError(getExpr(),ErrorMessage.CASE_NO_DATATYPE,et));
@@ -224,169 +221,206 @@ aspect PartialTypeChecker {
         }
         Type t = getType();
         for (CaseBranchStmt b : getBranchs()) {
-          b.partialTypeCheck(e,(DataTypeType) et);
+          b.partialTypeCheck(e,(DataTypeType) et,new DependencyList());
         }
     }
 
-    public void CaseBranchStmt.partialTypeCheck(SemanticConditionList e, DataTypeType t) {
-        getLeft().partialTypeCheck(e,t);
-        getRight().partialTypeCheck(e);
+    public void CaseBranchStmt.partialTypeCheck(SemanticConditionList e, DataTypeType t, DependencyList deps) {
+        getLeft().partialTypeCheck(e,t,deps);
+        getRight().partialTypeCheck(e,deps);
     }
 
-    public void TryCatchFinallyStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
+    public void TryCatchFinallyStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
         Type exc = getModel().getExceptionType();
-        getBody().partialTypeCheck(e);
+        getBody().partialTypeCheck(e,deps);
         for (CaseBranchStmt b : getCatchs()) {
-            b.getLeft().partialTypeCheck(e, exc);
-            b.getRight().partialTypeCheck(e);
+            b.getLeft().partialTypeCheck(e, exc, deps);
+            b.getRight().partialTypeCheck(e,deps);
             for (PatternVarUse pv : b.getLeft().getBoundPatternVars()) {
                 e.add(new TypeError(pv, ErrorMessage.MATCHING_NOT_ALLOWED_IN_CATCH, pv.getName()));
             }
         }
         if (hasFinally()) {
-            getFinally().partialTypeCheck(e);
+            getFinally().partialTypeCheck(e,deps);
             getFinally().checkLegalInit(e, ErrorMessage.NOT_ALLOWED_IN_FINALLY_CODE);
         }
     }
 
-    public void SkipStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
+    public void SkipStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
     }
 
-    public void AssertStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getCondition().partialTypeCheck(e);
+    public void AssertStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getCondition().partialTypeCheck(e,deps);
         getCondition().assertHasType(e,getModel().getBoolType());
     }
 
     // GUARDS
-    public abstract void Guard.partialTypeCheck(SemanticConditionList e);
-    public void AndGuard.partialTypeCheck(SemanticConditionList e) {
-        getLeft().partialTypeCheck(e);
-        getRight().partialTypeCheck(e);
+    public abstract void Guard.partialTypeCheck(SemanticConditionList e, DependencyList deps);
+    public void AndGuard.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        getLeft().partialTypeCheck(e,deps);
+        getRight().partialTypeCheck(e,deps);
     }
 
-    public void ClaimGuard.partialTypeCheck(SemanticConditionList e) {
-        getVar().partialTypeCheck(e);
+    public void ClaimGuard.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        getVar().partialTypeCheck(e,deps);
         Type t = getVar().getType();
-        if (!t.isFutureType()) {
+        if (!t.isFutureType() && !t.isUnknownType()) {
             e.add(new TypeError(getVar(),ErrorMessage.EXPECTED_FUT_TYPE, t));
         }
+        if (t.isUnknownType()) {
+	        deps.add(new SubTypeDep(new TypeOfLocation(getVar().toString()), TypeOfDependency.FUTURE));
+	    }
     }
-    public void ExpGuard.partialTypeCheck(SemanticConditionList e) {
+    public void ExpGuard.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         PureExp exp = getPureExp();
         // We'll only run "deeper" checks if the types check out.
         int size = e.getErrorCount();
-        exp.partialTypeCheck(e);
+        exp.partialTypeCheck(e,deps);
         getPureExp().assertHasType(e,getModel().getBoolType());
         if (e.getErrorCount() == size)
             hasFieldAccess(e); // check for visible change/builtin
     }
-    public void DurationGuard.partialTypeCheck(SemanticConditionList e) {
-        getMin().partialTypeCheck(e);
-        getMax().partialTypeCheck(e);
+    public void DurationGuard.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        getMin().partialTypeCheck(e,deps);
+        getMax().partialTypeCheck(e,deps);
         getMin().assertHasType(e, getModel().getRatType());
         getMax().assertHasType(e, getModel().getRatType());
     }
 
     // EXPRESSIONS
 
-    public void Exp.partialTypeCheck(SemanticConditionList e) { }
+    public void Exp.partialTypeCheck(SemanticConditionList e, DependencyList deps) { }
 
-    public void ThisExp.partialTypeCheck(SemanticConditionList e) {
+    public void ThisExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
       if (getContextDecl().isUnknown())
         e.add(new TypeError(this,ErrorMessage.THIS_STATIC,""));
     }
 
-    public void OriginalCall.partialTypeCheck(SemanticConditionList e) {
+    public void OriginalCall.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         /* We are never typeChecking method bodies within deltas at the moment. #386*/
         e.add(new TypeError(this,ErrorMessage.ORIGINAL_NOT_IN_DELTA,""));
     }
 
-    public void TypeUse.partialTypeCheck(SemanticConditionList e) {
+    public void TypeUse.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         getDecl().checkDecl(this, e, ErrorMessage.TYPE_NOT_RESOLVABLE, getName());
     }
 
-    public void DataTypeUse.partialTypeCheck(SemanticConditionList e) {
+    public void DataTypeUse.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         if (! getDecl().checkDecl(this, e, ErrorMessage.TYPE_NOT_RESOLVABLE, getName())) {
             return;
         }
         TypeCheckerHelper.checkDataTypeUse(e, this);
     }
 
-    public void UnresolvedTypeUse.partialTypeCheck(SemanticConditionList e) {
+    public void UnresolvedTypeUse.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         e.add(new TypeError(this,ErrorMessage.TYPE_NOT_RESOLVABLE,getName()));
     }
 
-    public void VarUse.partialTypeCheck(SemanticConditionList e) {
-        if(getDecl() == null) System.out.println("dep: "+this+" must exist");
+    public void VarUse.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        if(getDecl() == null) {
+        	deps.add(new FieldDep(this.toString()));
+       	}
         TypeCheckerHelper.checkDefBeforeUse(e, this);
     }
     
-    public void FieldUse.partialTypeCheck(SemanticConditionList e) {
-      System.out.println("dep: "+this+" must exist");
+    public void FieldUse.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+      deps.add(new FieldDep(this.toString()));
       boolean typed = true;
       try{
          TypeCheckerHelper.checkDefBeforeUse(e, this);
       }catch(Exception exc){
      	 typed =false;
       }
-      if(typed && !getType().isUnknownType()) System.out.println("dep: "+this+" be must subtype of "+getType());
+      if(typed && !getType().isUnknownType()) {
+          deps.add(new SubTypeDep(new TypeOfLocation(this.toString()), new TypeIdentity(getType())));
+      }
     }
 
-    public void Call.partialTypeCheck(SemanticConditionList e) {
-        if (getCallee().getType().isNullType()) {
+  public void Call.partialTypeCheckEqualParams(SemanticConditionList e, String method, List<PureExp> list, DependencyList deps) {
+      for(int i = 0; i < list.numChildren(); i++){
+          PureExp exp = list.getChild(i);
+          exp.partialTypeCheck(e,deps);
+          Type t = exp.getType();
+          if(!t.isUnknownType()){
+              deps.add(new SubTypeDep(new TypeOfMethodParameter(method, i), new TypeIdentity(t)));
+          } else {
+              deps.add(new SubTypeDep(new TypeOfMethodParameter(method, i), new TypeOfLocation(exp.toString())));
+             // System.out.println("dep: "+method+"["+i+"]"+" must have the type of "+exp); //TODO 
+          }
+      }
+  }
+
+    public void Call.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+         if (getCallee().getType().isNullType()) {
             e.add(new TypeError(this, ErrorMessage.NULL_NOT_HERE, ""));
             return;
         }
 
-        getCallee().partialTypeCheck(e);
+        getCallee().partialTypeCheck(e,deps);
         Type tt = getCallee().getType();
         
         //for variables, get declaration and introduce dependencies from the lhs    
         if(getCallee() instanceof VarUse){
             VarUse vv = (VarUse)getCallee();
-            VarDecl decl = (VarDecl) vv.getDecl();
-            System.out.println("dep: "+ decl.getChild(0)  + " must have method "+getMethod());
+            VarDecl decl = (VarDecl) vv.getDecl(); //is null if this is actually a field without this. prefix
+            if(decl != null){
+                MethodDep mDep = new MethodDep(getMethod(), getNumParam());
+                deps.add(mDep);
+                deps.add(new HasMethodDep(mDep, decl.getChild(0).toString(), true));
+            } else {
+        	deps.add(new FieldDep(vv.toString()));
+                MethodDep mDep = new MethodDep(getMethod(), getNumParam());
+                deps.add(mDep);
+                deps.add(new HasMethodDep(mDep, vv.toString(), false));            
+            }
             
         //if field type is unknown, put dependency on the field name
         } else if (getCallee().getType() != null && !getCallee().getType().isUnknownType()&& !getCallee().getType().isUnionType()){
-            System.out.println("dep: "+ tt  + " must have method "+getMethod());
+            MethodDep mDep = new MethodDep(getMethod(), getNumParam());
+            deps.add(mDep);
+            deps.add(new HasMethodDep(mDep, tt.toString(), true));
           
             
         //self call
         } else if(getCallee().getType().isUnionType()){
-            System.out.println("dep: self must have method "+getMethod());
+            deps.add(new MethodDep(getMethod(), getNumParam()));
 
         //fieldname known
         } else {
-            System.out.println("dep: "+getCallee() + " must have method "+getMethod());
+            MethodDep mDep = new MethodDep(getMethod(), getNumParam());
+            deps.add(mDep);
+            deps.add(new HasMethodDep(mDep, getCallee().toString(), false));
+            deps.add(new MethodDep(getMethod(), getNumParam()));
         }
             
         Type t = getType();
         if (t.isUnknownType() || getMethodSig() == null) {
-            e.add(new TypeError(this, ErrorMessage.NO_METHOD_DECL, getMethod()));
+    //        e.add(new TypeError(this, ErrorMessage.NO_METHOD_DECL, getMethod()));
+            partialTypeCheckEqualParams(e,getMethod(),getParams(),deps);
         } else {
             typeCheckEqualParams(e,getMethodSig());
         }
     }
 
-    public void NewExp.partialTypeCheck(SemanticConditionList e) {
-      System.out.println("dep: "+getClassName()+" must exist");
+    public void NewExp.partialTypeCheck(SemanticConditionList e, DependencyList deps)  {
+      deps.add(new ClassDep(getClassName()));
       ASTNode<?> parent = getParent();
       if(parent instanceof AssignStmt){
           AssignStmt assign = (AssignStmt)parent;
           VarOrFieldUse use = assign.getVar();
-          if(use.getDecl() == null)
-              System.out.println("dep: "+use+" must have a type implemented by "+getClassName());
-          else
-              System.out.println("dep: "+use.getDecl().getChild(0) +" must be implemented by "+getClassName());
+          if(use.getDecl() == null){
+              deps.add(new SubTypeDep(new TypeOfLocation(use.toString()), new TypeIdentity(getClassName())));
+          } else {
+              deps.add(new SubTypeDep(new TypeIdentity(use.getDecl().getChild(0).toString()), new TypeIdentity(getClassName())));
+          }
       }
       parent = parent.getParent();
       if(parent instanceof VarDecl){
           VarDecl decl = (VarDecl)parent;
-          System.out.println("dep: "+decl.getChild(0) +" must be implemented by "+getClassName());
+          deps.add(new SubTypeDep(new TypeIdentity(decl.getChild(0).toString()), new TypeIdentity(getClassName())));
       }
       Decl decl = lookup(new KindedName(Kind.CLASS,getClassName()));
       if (!decl.isClass()) {
@@ -396,15 +430,20 @@ aspect PartialTypeChecker {
           typeCheckEqualParams(e,cd);
       }
     }
+    
 
 
-    public void GetExp.partialTypeCheck(SemanticConditionList e) {
-        if (!getPureExp().getType().isFutureType()) {
-            e.add(new TypeError(getPureExp(), ErrorMessage.EXPECTED_FUT_TYPE, getPureExp().getType()));
-        }
-        getPureExp().partialTypeCheck(e);
-    }
-    public void AddAddExp.partialTypeCheck(SemanticConditionList e) {
+    public void GetExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+	    getPureExp().partialTypeCheck(e,deps);
+	    if (!getPureExp().getType().isFutureType() && !getPureExp().getType().isUnknownType() ) {
+	        e.add(new TypeError(getPureExp(), ErrorMessage.EXPECTED_FUT_TYPE, getPureExp().getType()));
+	    }
+	    if (!getPureExp().getType().isFutureType() && getPureExp().getType().isUnknownType() ) {
+	        deps.add(new SubTypeDep(new TypeOfLocation(getPureExp().toString()), TypeOfDependency.FUTURE));
+	    }
+	}
+
+    public void AddAddExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         // Special case: can also "add" strings.
         Type rt = null;
         try {
@@ -427,32 +466,34 @@ aspect PartialTypeChecker {
                 e.add(new TypeError(this, ErrorMessage.ADD_INCOMPARABLE_TYPE, lt, rt));
             }
         }
+
         if(rt == null && lt != null && lt.isNumericType()){
-            System.out.println("dep: "+getRight()+" must be numeric");
+            deps.add(new SubTypeDep(new TypeOfLocation(getRight().toString()), TypeOfDependency.NUMERICAL));
         }
         if(rt == null && lt != null && lt.isStringType()){
-            System.out.println("dep: "+getRight()+" must be string");
+            deps.add(new SubTypeDep(new TypeOfLocation(getRight().toString()), TypeOfDependency.STRING));
         }
         if(lt == null && rt != null && rt.isNumericType()){
-            System.out.println("dep: "+getLeft()+" must be numeric");
+            deps.add(new SubTypeDep(new TypeOfLocation(getLeft().toString()), TypeOfDependency.NUMERICAL));
         }
         if(lt == null && rt != null && rt.isStringType()){
-            System.out.println("dep: "+getLeft()+" must be string");
+            deps.add(new SubTypeDep(new TypeOfLocation(getLeft().toString()), TypeOfDependency.STRING));
         }
 
-        getLeft().partialTypeCheck(e);
-        getRight().partialTypeCheck(e);
+
+        getLeft().partialTypeCheck(e,deps);
+        getRight().partialTypeCheck(e,deps);
     }
-    public void ArithmeticExp.partialTypeCheck(SemanticConditionList e) {
-        TypeCheckerHelper.partialTypeCheckBinary(e,this,getModel().getRatType());
+    public void ArithmeticExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        TypeCheckerHelper.partialTypeCheckBinary(e,this,getModel().getRatType(),deps);
     }
-    public void BoolExp.partialTypeCheck(SemanticConditionList e) {
-        TypeCheckerHelper.partialTypeCheckBinary(e,this,getModel().getBoolType());
+    public void BoolExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        TypeCheckerHelper.partialTypeCheckBinary(e,this,getModel().getBoolType(),deps);
     }
 
-    public void RelationalExpr.partialTypeCheck(SemanticConditionList e) {
-        getLeft().partialTypeCheck(e);
-        getRight().partialTypeCheck(e);
+    public void RelationalExpr.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        getLeft().partialTypeCheck(e,deps);
+        getRight().partialTypeCheck(e,deps);
         Type tl = getLeft().getType();
         Type tr = getRight().getType();
         if (!tl.isAssignableTo(tr) && !tr.isAssignableTo(tl)) {
@@ -460,11 +501,11 @@ aspect PartialTypeChecker {
         }
     }
 
-    public void IfExp.partialTypeCheck(SemanticConditionList e) {
-        getCondExp().partialTypeCheck(e);
+    public void IfExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        getCondExp().partialTypeCheck(e,deps);
         getCondExp().assertHasType(e,getModel().getBoolType());
-        getThenExp().partialTypeCheck(e);
-        getElseExp().partialTypeCheck(e);
+        getThenExp().partialTypeCheck(e,deps);
+        getElseExp().partialTypeCheck(e,deps);
         Type tt = getThenExp().getType();
         Type et = getElseExp().getType();
         if (!(et.isAssignableTo(tt) || tt.isAssignableTo(et))) {
@@ -472,8 +513,8 @@ aspect PartialTypeChecker {
         }
     }
 
-    public void CaseExp.partialTypeCheck(SemanticConditionList e) {
-        getExpr().partialTypeCheck(e);
+    public void CaseExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        getExpr().partialTypeCheck(e,deps);
         Type et = getExpr().getType();
         if (!et.isDataType()) {
             e.add(new TypeError(getExpr(),ErrorMessage.CASE_NO_DATATYPE,et));
@@ -481,7 +522,7 @@ aspect PartialTypeChecker {
         }
         Type t = getType();
         for (CaseBranch b : getBranchs()) {
-            b.partialTypeCheck(e,(DataTypeType) et);
+            b.partialTypeCheck(e,(DataTypeType) et, deps);
             Type t2 = b.getType();
             if (!t2.isAssignableTo(t)) {
                 e.add(new TypeError(this,ErrorMessage.BRANCH_INCOMPARABLE_TYPE,t,t2));
@@ -489,15 +530,15 @@ aspect PartialTypeChecker {
         }
     }
 
-    public void CaseBranch.partialTypeCheck(SemanticConditionList e, DataTypeType t) {
+    public void CaseBranch.partialTypeCheck(SemanticConditionList e, DataTypeType t, DependencyList deps) {
         int size = e.getErrorCount();
-        getLeft().partialTypeCheck(e,t);
+        getLeft().partialTypeCheck(e,t, deps);
         /* If the LHS is botched, we can't reliably use any variables bound therein. */
         if (e.getErrorCount() == size)
-          getRight().partialTypeCheck(e);
+          getRight().partialTypeCheck(e,new DependencyList());
     }
 
-    public void FnApp.partialTypeCheck(SemanticConditionList e) {
+    public void FnApp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         Decl d = getDecl();
         if (!d.isFunction()) {
             e.add(new TypeError(this,ErrorMessage.FUNCTION_NOT_RESOLVABLE,getName()));
@@ -506,7 +547,7 @@ aspect PartialTypeChecker {
         }
     }
 
-    public void DataConstructorExp.partialTypeCheck(SemanticConditionList e) {
+    public void DataConstructorExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         Decl decl = getDecl();
         if (!(decl instanceof DataConstructor)) {
             e.add(new SemanticError(this,ErrorMessage.CONSTRUCTOR_NOT_RESOLVABLE,getConstructor()));
@@ -528,32 +569,32 @@ aspect PartialTypeChecker {
         }
 
     }
-    public void LetExp.partialTypeCheck(SemanticConditionList e) {
-        getVar().partialTypeCheck(e);
-        getVal().partialTypeCheck(e);
-        getExp().partialTypeCheck(e);
-        TypeCheckerHelper.checkAssignment(e,this,getVar().getAccess().getType(),getVal());
+    public void LetExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        getVar().partialTypeCheck(e,deps);
+        getVal().partialTypeCheck(e,deps);
+        getExp().partialTypeCheck(e,deps);
+        TypeCheckerHelper.checkAssignment(e,this,getVar().getAccess().getType(),getVal(), deps);
     }
 
-    public void MinusExp.partialTypeCheck(SemanticConditionList e) {
+    public void MinusExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
          int size = e.getErrorCount();
-         getOperand().partialTypeCheck(e);
+         getOperand().partialTypeCheck(e,deps);
          if (e.getErrorCount() == size)
              // KLUDGE: we'd like to say "any numeric type please" here
              getOperand().assertHasType(e,getModel().getRatType());
     }
 
-    public void NegExp.partialTypeCheck(SemanticConditionList e) {
+    public void NegExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
          int size = e.getErrorCount();
-         getOperand().partialTypeCheck(e);
+         getOperand().partialTypeCheck(e,deps);
          if (e.getErrorCount() == size)
              getOperand().assertHasType(e,getModel().getBoolType());
     }
 
-    public void ListLiteral.partialTypeCheck(SemanticConditionList e) {
+    public void ListLiteral.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
         Type t = UnknownType.INSTANCE;
         for (PureExp exp : getPureExps()) {
-            exp.partialTypeCheck(e);
+            exp.partialTypeCheck(e,deps);
             Type expt = exp.getType();
             if (!t.isUnknownType()) {
                 if (!expt.isAssignableTo(t) && !t.isAssignableTo(expt)) {
@@ -571,34 +612,34 @@ aspect PartialTypeChecker {
 
     // PATTERNS
 
-    public void Pattern.partialTypeCheck(SemanticConditionList e, Type t) {  }
+    public void Pattern.partialTypeCheck(SemanticConditionList e, Type t, DependencyList deps) {  }
 
-    public void PatternVarUse.partialTypeCheck(SemanticConditionList e, Type t) {
+    public void PatternVarUse.partialTypeCheck(SemanticConditionList e, Type t, DependencyList deps) {
         if (!getType().equals(t)) {
             e.add(new TypeError(this,ErrorMessage.TYPE_MISMATCH,getType(),t));
         }
     }
 
-    public void LiteralPattern.partialTypeCheck(SemanticConditionList e, Type t) {
+    public void LiteralPattern.partialTypeCheck(SemanticConditionList e, Type t, DependencyList deps) {
         if (!getType().equals(t)) {
             e.add(new TypeError(this,ErrorMessage.TYPE_MISMATCH,getType(),t));
         }
     }
 
-    public void ConstructorPattern.partialTypeCheck(SemanticConditionList e, Type t) {
+    public void ConstructorPattern.partialTypeCheck(SemanticConditionList e, Type t, DependencyList deps) {
         TypeCheckerHelper.typeCheck(this,e,t);
     }
 
     //ASPECT
-    public void ThrowStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getReason().partialTypeCheck(e);
+    public void ThrowStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getReason().partialTypeCheck(e,deps);
         getReason().assertHasType(e,getModel().getExceptionType());
     }
 
-    public void DieStmt.partialTypeCheck(SemanticConditionList e) {
-        super.partialTypeCheck(e);
-        getReason().partialTypeCheck(e);
+    public void DieStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
+        super.partialTypeCheck(e,deps);
+        getReason().partialTypeCheck(e,deps);
         getReason().assertHasType(e,getModel().getExceptionType());
     }
 
@@ -608,9 +649,9 @@ aspect PartialTypeChecker {
 
 /* Components */
 aspect TypeCheckComponents {
-    public void MoveStmt.partialTypeCheck(SemanticConditionList e) {}
-    public void RebindStmt.partialTypeCheck(SemanticConditionList e) {}
+    public void MoveStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {}
+    public void RebindStmt.partialTypeCheck(SemanticConditionList e, DependencyList deps) {}
 
-    public void ObjectGuard.partialTypeCheck(SemanticConditionList e) { }
+    public void ObjectGuard.partialTypeCheck(SemanticConditionList e, DependencyList deps) { }
 
 }

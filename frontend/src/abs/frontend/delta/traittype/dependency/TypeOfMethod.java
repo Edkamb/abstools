@@ -5,19 +5,8 @@
 package abs.frontend.delta.traittype.dependency;
 
 public class TypeOfMethod extends TypeOfDependency{
-    private String name;
-
-    public String getName() {
-        return name;
-    }
-
     public TypeOfMethod(String name) {
-        super();
-        this.name = name;
+        super(name);
     }
 
-    @Override
-    public String toString() {
-        return "("+name+")";
-    }
 }

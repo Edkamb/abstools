@@ -4,8 +4,10 @@
  */
 package abs.frontend.delta.traittype.dependency;
 
-public class TypeOfLocation extends TypeOfDependency {
-    public TypeOfLocation(String name) {
-        super(name);
+public class TypeOfMethodParameter extends TypeOfDependency {
+
+    public TypeOfMethodParameter(String method, int position) {
+        super(method + "["+position+"]");
     }
+
 }
