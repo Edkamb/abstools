@@ -17,7 +17,6 @@ public class MethodFType extends LayerTwoType {
         return "sig=" + sig + ", usesOrig=" + usesOrig + ", deps=" + deps;
     }
     public MethodFType(MethodImpl met, boolean empty) {
-        DependencyList deps = new DependencyList();
         if(!empty)traverse(met, deps);
         this.sig = met.getMethodSig();
         SemanticConditionList s = new SemanticConditionList();
