@@ -16,7 +16,7 @@ public class TraitInnerAbsType extends TraitInnerType {
 
     @Override
     public String toString() {
-        return methodName + ": ABS";
+        return methodName + " : ABS";
     }
 
     private String methodName;

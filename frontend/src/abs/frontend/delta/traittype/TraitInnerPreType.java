@@ -5,9 +5,11 @@
 package abs.frontend.delta.traittype;
 
 import abs.frontend.ast.MethodImpl;
+import abs.frontend.ast.MethodSig;
 import abs.frontend.delta.traittype.layertype.LayerTwoType;
 import abs.frontend.delta.traittype.layertype.LayerTwoVarType;
 import abs.frontend.delta.traittype.layertype.MethodFType;
+import abs.frontend.delta.traittype.layertype.SignatureFType;
 
 /**
  *   An inner type of a trait type: a present method flattening type
@@ -19,6 +21,10 @@ public class TraitInnerPreType extends TraitInnerType {
             type = new LayerTwoVarType();            
         else
             type = new MethodFType(met, empty);
+    }
+    public TraitInnerPreType(MethodSig sig) {
+        methodName = sig.getName();
+        type = new SignatureFType(sig);
     }
     @Override
     public String toString() {

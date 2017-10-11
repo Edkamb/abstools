@@ -467,16 +467,16 @@ aspect PartialTypeChecker {
             }
         }
 
-        if(rt.isUnknownType() && !lt.isUnknownType() && lt.isNumericType() && getRight() instanceof VarOrFieldUse){
+        if((rt.isUnknownType() || rt == null) && !lt.isUnknownType() && lt.isNumericType() && getRight() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getRight().toString()), TypeOfDependency.NUMERICAL));
         }
-        if(rt.isUnknownType() && !lt.isUnknownType()&& lt.isStringType() && getRight() instanceof VarOrFieldUse){
+        if((rt.isUnknownType() || rt == null) && !lt.isUnknownType()&& lt.isStringType() && getRight() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getRight().toString()), TypeOfDependency.STRING));
         }
-        if(lt.isUnknownType() && !rt.isUnknownType() && rt.isNumericType() && getLeft() instanceof VarOrFieldUse){
+        if((lt.isUnknownType() || lt == null) && !rt.isUnknownType() && rt.isNumericType() && getLeft() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getLeft().toString()), TypeOfDependency.NUMERICAL));
         }
-        if(lt.isUnknownType() && !rt.isUnknownType() && rt.isStringType() && getLeft() instanceof VarOrFieldUse){
+        if((lt.isUnknownType() || lt == null) && !rt.isUnknownType() && rt.isStringType() && getLeft() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getLeft().toString()), TypeOfDependency.STRING));
         }
 

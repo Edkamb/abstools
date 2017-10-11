@@ -25,7 +25,7 @@ aspect DeltaModifierApplicator {
     	ArrayList<Modifier> cop = new ArrayList<Modifier>();
     	for( Modifier mod :getModifierList() ) cop.add(mod);
         for ( Modifier mod : cop ) {
-            mod.collapseTraitModifiers(getClassDecl());
+            if(getClassDecl() != null)  mod.collapseTraitModifiers(getClassDecl());
         }
     }
 

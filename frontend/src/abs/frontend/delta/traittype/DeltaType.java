@@ -67,7 +67,8 @@ public class DeltaType {
         if(classSubMod instanceof RemoveMethodModifier){
             for (MethodSig sig : ((RemoveMethodModifier)classSubMod).getMethodSigs()) {
                 TraitInnerAbsType abs = new TraitInnerAbsType(sig);
-                preType.add(abs);
+                TraitInnerPreType pre = new TraitInnerPreType(sig);
+                preType.add(pre);
                 postType.add(abs);
             }
         } else if(classSubMod instanceof AddMethodModifier){

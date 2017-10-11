@@ -2,11 +2,11 @@
 import abs.frontend.delta.traittype.*;
 
 aspect TraitTypeChecker {
-    public void Model.analyzeSPL() {
-        System.out.println("I do stuff!");   
+  public void  Model.analyzeSPL() {
+        System.out.println("Starting inference of delta and trait types");
         System.out.println();
         
-        //collect all Traits
+        //collect all Traits TODO: this step is a left over from earlier stages
         LinkedList<TraitDecl> list = new LinkedList<>();
         for (Decl decl : getDecls()) {
             if(decl instanceof TraitDecl){
@@ -16,17 +16,63 @@ aspect TraitTypeChecker {
         HashMap<String, TraitType> tTypes = new HashMap<>();
         for (TraitDecl traitDecl : list) {
             System.out.println("found trait: "+traitDecl.getName());
-            TraitType tt = new TraitType((TraitSetExpr) traitDecl.getTraitExpr());
-            tTypes.put(traitDecl.getName(), tt);
-            System.out.println("  "+tt);
+            if(isPartiallyTypeable(traitDecl)){
+                TraitType tt = new TraitType((TraitSetExpr) traitDecl.getTraitExpr());
+                tTypes.put(traitDecl.getName(), tt);
+                System.out.println("  "+tt);
+            } 
         }
         for (DeltaDecl deltaDecl : getDeltaDecls()) {
             System.out.println("found delta: "+deltaDecl.getName());
-            DeltaType dt = new DeltaType(deltaDecl, tTypes);
-            System.out.println("  "+dt);
+            if(isPartiallyTypeable(deltaDecl) && isPartiallyTypeableDelta2(deltaDecl)&& isPartiallyTypeableDelta(deltaDecl)){
+                DeltaType dt = new DeltaType(deltaDecl, tTypes);
+                System.out.println("  "+dt);
+            }
         }
 
         System.out.println();
-        System.out.println("I finished!");     
+        System.out.println("Inference complete!");     
     }
+  
+  private boolean  Model.isPartiallyTypeableDelta(DeltaDecl decl){
+      for (ModuleModifier mod : decl.getModuleModifiers()) {
+          if(!(mod instanceof ClassModifier)){
+              System.out.println("  only ClassModifiers are supported!");
+              return false;
+          }
+          if(mod instanceof ModifyClassModifier){
+              ModifyClassModifier oomod = (ModifyClassModifier) mod;
+              for (Modifier innerMod : oomod.getModifiers()) {
+                  if(innerMod instanceof AddFieldModifier || innerMod instanceof RemoveFieldModifier ){
+                      System.out.println("  only Method and Trait Modifiers are supported!");
+                      return false;
+                  }
+              }
+          }
+      }
+      return true;
+  }
+  
+  
+  private boolean Model.isPartiallyTypeableDelta2(ASTNode<?> node) {
+      if(node instanceof TraitNameExpr) {
+          System.out.println("  referencing trait types into delta types is not supported yet!");
+          return false;
+      }
+      for(int i = 0; i < node.getNumChild(); i++){
+          if(!isPartiallyTypeableDelta2(node.getChild(i))) return false;
+      }
+      return true;
+}
+  
+  private boolean Model.isPartiallyTypeable(ASTNode<?> node) {
+      if(node instanceof FnApp) {
+          System.out.println("  function applications are not supported by partial typing yet!");
+          return false;
+      }
+      for(int i = 0; i < node.getNumChild(); i++){
+          if(!isPartiallyTypeable(node.getChild(i))) return false;
+      }
+      return true;
+}
  }
