@@ -23,6 +23,7 @@ import abs.frontend.ast.ASTNode;
 import abs.frontend.ast.AmbiguousDecl;
 import abs.frontend.ast.AttrAssignment;
 import abs.frontend.ast.Binary;
+import abs.frontend.ast.Call;
 import abs.frontend.ast.CompilationUnit;
 import abs.frontend.ast.Const;
 import abs.frontend.ast.ConstructorPattern;
@@ -79,6 +80,7 @@ import abs.frontend.delta.traittype.dependency.SubTypeDep;
 import abs.frontend.delta.traittype.dependency.TypeIdentity;
 import abs.frontend.delta.traittype.dependency.TypeOfDependency;
 import abs.frontend.delta.traittype.dependency.TypeOfLocation;
+import abs.frontend.delta.traittype.dependency.TypeOfMethod;
 import abs.frontend.parser.SourcePosition;
 
 public class TypeCheckerHelper {
@@ -143,7 +145,7 @@ public class TypeCheckerHelper {
     }
 
     //TODO: handle case where the future is not directly accessed
-    public static void checkAssignment(SemanticConditionList l, ASTNode<?> n, Type lht, Exp rhte, DependencyList deps) {
+    public static void checkInitAssignment(SemanticConditionList l, ASTNode<?> n, Type lht, Exp rhte, DependencyList deps) {
         Type te = rhte.getType();
         if (!te.isAssignableTo(lht)) {
             if(rhte instanceof GetExp){
@@ -152,28 +154,41 @@ public class TypeCheckerHelper {
                     //System.out.println("dep: "+inner.getPureExp()+" must be a future with inner type "+lht);
                     deps.add(new InnerSubTypeDep(new TypeOfLocation(inner.getPureExp().toString()), new TypeIdentity(lht.toString())));
                 }
+            } if(rhte instanceof Call){
+                Call call = (Call)rhte;
+                TypeOfDependency tt = (lht.isUnknownType()? TypeOfDependency.FUTURE : new TypeIdentity(lht));
+                deps.add(new InnerSubTypeDep(new TypeOfMethod(call.getMethod()),tt));
             }
         }
     }
 
     public static void partiallyCheckAssignment(SemanticConditionList l, ASTNode<?> n, VarOrFieldUse lhs, Type lht, Exp rhs, Type rht, DependencyList deps) {
         
-        if(rhs instanceof VarOrFieldUse){
+        if(rhs instanceof VarOrFieldUse && lht.isUnknownType()){
             deps.add(new SubTypeDep(new TypeOfLocation(lhs.toString()), new TypeOfLocation(rhs.toString())));
+        } else if(rhs instanceof VarOrFieldUse && !lht.isUnknownType()){
+            deps.add(new SubTypeDep(new TypeOfLocation(rhs.toString()), new TypeIdentity(lht)));
         } else if(rhs instanceof GetExp && lht.isUnknownType() && rht.isUnknownType()){
            // System.out.println("dep: "+((GetExp)rhs).getPureExp()+ " must have future type with the inner type of "+lhs);
-            deps.add(new InnerSubTypeDep(new TypeOfLocation(((GetExp)rhs).getPureExp().toString()), new TypeIdentity(lhs.toString())));
+            deps.add(new InnerSubTypeDep(new TypeIdentity(lhs.toString()), new TypeOfLocation(((GetExp)rhs).getPureExp().toString())  ));
         } else if(rhs instanceof GetExp && !lht.isUnknownType() && rht.isUnknownType()){
             deps.add(new InnerSubTypeDep(new TypeOfLocation(((GetExp)rhs).getPureExp().toString()), TypeOfDependency.futureFor(lht.toString())));
         } else if(rhs instanceof GetExp && lht.isUnknownType() && !rht.isUnknownType()){
             //System.out.println("dep: "+lhs+ " subtype of inner type of"+rht);
             deps.add(new InnerSubTypeDep(new TypeOfLocation(lhs.toString()), new TypeIdentity(rht.toString())));
-        } else if(rht != null && !rht.isAssignableTo(lht)){
-            l.add(new TypeError(n, ErrorMessage.CANNOT_ASSIGN, rht, lht));            
-        } else if(lht != null && !lht.isUnknownType()){
+        }  else if(lht != null && !lht.isUnknownType()){
             //System.out.println("dep: "+lhs+" subtype of "+rht);            
             deps.add(new SubTypeDep(new TypeOfLocation(lhs.toString()), new TypeIdentity(rht)));
-        } 
+        } else if(lhs != null && rhs instanceof Call){
+            VarOrFieldUse use = (VarOrFieldUse)lhs;
+            Call call = (Call)rhs;
+            VarOrFieldDecl decl = use.getDecl();
+            deps.add(new SubTypeDep(new TypeOfLocation(use.toString()), TypeOfDependency.FUTURE));
+            if(decl == null) deps.add(new InnerSubTypeDep(new TypeOfMethod(call.getMethod()),new TypeOfLocation(use.toString())));
+            else             deps.add(new SubTypeDep(new TypeOfMethod(call.getMethod()),new TypeIdentity(decl.getChild(0).toString())));
+        } else if(rht != null && !rht.isAssignableTo(lht)){
+            l.add(new TypeError(n, ErrorMessage.CANNOT_ASSIGN, rht, lht));            
+        }
     }
 
     public static void typeCheckParamList(SemanticConditionList l, HasParams params) {
@@ -625,19 +640,21 @@ public class TypeCheckerHelper {
         try {
             rt = b.getRight().getType();
         } catch (Exception e2) {
+            if(b.getRight() instanceof VarOrFieldUse)
             deps.add(new SubTypeDep(new TypeOfLocation(b.getRight().toString()), new TypeIdentity(t)));
         }
         Type lt = null;
         try {
             lt = b.getLeft().getType();
         } catch (Exception e2) {        
+            if(b.getLeft() instanceof VarOrFieldUse)
             deps.add(new SubTypeDep(new TypeOfLocation(b.getLeft().toString()), new TypeIdentity(t)));
         }
-        if(rt.isUnknownType()){
+        if(rt.isUnknownType()&& b.getRight() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(b.getRight().toString()), new TypeIdentity(t)));
         }
 
-        if(lt.isUnknownType()){
+        if(lt.isUnknownType() && b.getLeft() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(b.getLeft().toString()), new TypeIdentity(t)));
         }
 

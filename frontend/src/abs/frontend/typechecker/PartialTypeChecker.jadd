@@ -53,7 +53,7 @@ aspect PartialTypeChecker {
         Type t = getAccess().getType();
         if (hasInitExp()) {
             getInitExp().partialTypeCheck(e,deps);
-            TypeCheckerHelper.checkAssignment(e,this,t,getInitExp(),deps);
+            TypeCheckerHelper.checkInitAssignment(e,this,t,getInitExp(),deps);
         } else {
             if (!t.isReferenceType() && !t.isFutureType()) {
                 e.add(new TypeError(this, ErrorMessage.VAR_INIT_REQUIRED, new String[0]));
@@ -70,7 +70,7 @@ aspect PartialTypeChecker {
         if (hasInitExp()) {
             getInitExp().partialTypeCheck(e,deps);
             if (e.getErrorCount() > nerrors) return;
-            TypeCheckerHelper.checkAssignment(e,this,t,getInitExp(),deps);
+            TypeCheckerHelper.checkInitAssignment(e,this,t,getInitExp(),deps);
         } else {
             if (!t.isReferenceType() && !t.isFutureType()) {
                 e.add(new TypeError(this, ErrorMessage.FIELD_INIT_REQUIRED, new String[0]));
@@ -365,7 +365,7 @@ aspect PartialTypeChecker {
         //for variables, get declaration and introduce dependencies from the lhs    
         if(getCallee() instanceof VarUse){
             VarUse vv = (VarUse)getCallee();
-            VarDecl decl = (VarDecl) vv.getDecl(); //is null if this is actually a field without this. prefix
+            VarOrFieldDecl decl = vv.getDecl();//is null if this is actually a field without this. prefix
             if(decl != null){
                 MethodDep mDep = new MethodDep(getMethod(), getNumParam());
                 deps.add(mDep);
@@ -455,7 +455,7 @@ aspect PartialTypeChecker {
             lt = getLeft().getType();
         } catch (Exception e2) {        
         }
-        if(rt != null && lt != null){
+        if(rt != null && lt != null && !lt.isUnknownType() && !rt.isUnknownType()){
             if (! (lt.isNumericType() || lt.isStringType())) {
                 e.add(new TypeError(this, ErrorMessage.EXPECTED_ADDABLE_TYPE, lt));
             }
@@ -467,16 +467,16 @@ aspect PartialTypeChecker {
             }
         }
 
-        if(rt == null && lt != null && lt.isNumericType()){
+        if(rt.isUnknownType() && !lt.isUnknownType() && lt.isNumericType() && getRight() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getRight().toString()), TypeOfDependency.NUMERICAL));
         }
-        if(rt == null && lt != null && lt.isStringType()){
+        if(rt.isUnknownType() && !lt.isUnknownType()&& lt.isStringType() && getRight() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getRight().toString()), TypeOfDependency.STRING));
         }
-        if(lt == null && rt != null && rt.isNumericType()){
+        if(lt.isUnknownType() && !rt.isUnknownType() && rt.isNumericType() && getLeft() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getLeft().toString()), TypeOfDependency.NUMERICAL));
         }
-        if(lt == null && rt != null && rt.isStringType()){
+        if(lt.isUnknownType() && !rt.isUnknownType() && rt.isStringType() && getLeft() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getLeft().toString()), TypeOfDependency.STRING));
         }
 
@@ -573,7 +573,7 @@ aspect PartialTypeChecker {
         getVar().partialTypeCheck(e,deps);
         getVal().partialTypeCheck(e,deps);
         getExp().partialTypeCheck(e,deps);
-        TypeCheckerHelper.checkAssignment(e,this,getVar().getAccess().getType(),getVal(), deps);
+        TypeCheckerHelper.checkInitAssignment(e,this,getVar().getAccess().getType(),getVal(), deps);
     }
 
     public void MinusExp.partialTypeCheck(SemanticConditionList e, DependencyList deps) {
