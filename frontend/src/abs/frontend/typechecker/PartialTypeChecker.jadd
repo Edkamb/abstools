@@ -386,7 +386,11 @@ aspect PartialTypeChecker {
             
         //self call
         } else if(getCallee().getType().isUnionType()){
-            deps.add(new MethodDep(getMethod(), getNumParam()));
+            MethodDep mDep = new MethodDep(getMethod(), getNumParam());
+            deps.add(mDep);
+            String name = "This";
+            if(getContextMethod().getContextDecl() instanceof ClassDecl) name = ((ClassDecl)getContextMethod().getContextDecl()).getName();
+            deps.add(new HasMethodDep(mDep, name, true));
 
         //fieldname known
         } else {
@@ -467,16 +471,16 @@ aspect PartialTypeChecker {
             }
         }
 
-        if((rt.isUnknownType() || rt == null) && !lt.isUnknownType() && lt.isNumericType() && getRight() instanceof VarOrFieldUse){
+        if((rt == null || rt.isUnknownType()) && !lt.isUnknownType() && lt.isNumericType() && getRight() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getRight().toString()), TypeOfDependency.NUMERICAL));
         }
-        if((rt.isUnknownType() || rt == null) && !lt.isUnknownType()&& lt.isStringType() && getRight() instanceof VarOrFieldUse){
+        if((rt == null || rt.isUnknownType()) && !lt.isUnknownType()&& lt.isStringType() && getRight() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getRight().toString()), TypeOfDependency.STRING));
         }
-        if((lt.isUnknownType() || lt == null) && !rt.isUnknownType() && rt.isNumericType() && getLeft() instanceof VarOrFieldUse){
+        if((lt == null || lt.isUnknownType()) && !rt.isUnknownType() && rt.isNumericType() && getLeft() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getLeft().toString()), TypeOfDependency.NUMERICAL));
         }
-        if((lt.isUnknownType() || lt == null) && !rt.isUnknownType() && rt.isStringType() && getLeft() instanceof VarOrFieldUse){
+        if((lt == null || lt.isUnknownType()) && !rt.isUnknownType() && rt.isStringType() && getLeft() instanceof VarOrFieldUse){
             deps.add(new SubTypeDep(new TypeOfLocation(getLeft().toString()), TypeOfDependency.STRING));
         }
 

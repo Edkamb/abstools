@@ -176,7 +176,7 @@ public class TypeCheckerHelper {
         } else if(rhs instanceof GetExp && lht.isUnknownType() && !rht.isUnknownType()){
             //System.out.println("dep: "+lhs+ " subtype of inner type of"+rht);
             deps.add(new InnerSubTypeDep(new TypeOfLocation(lhs.toString()), new TypeIdentity(rht.toString())));
-        }  else if(lht != null && !lht.isUnknownType()){
+        }  else if(rht != null && !rht.isUnknownType()){
             //System.out.println("dep: "+lhs+" subtype of "+rht);            
             deps.add(new SubTypeDep(new TypeOfLocation(lhs.toString()), new TypeIdentity(rht)));
         } else if(lhs != null && rhs instanceof Call){

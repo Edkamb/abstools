@@ -10,6 +10,7 @@ import abs.frontend.ast.AddClassModifier;
 import abs.frontend.ast.AddMethodModifier;
 import abs.frontend.ast.DeltaDecl;
 import abs.frontend.ast.DeltaTraitModifier;
+import abs.frontend.ast.InterfaceTypeUse;
 import abs.frontend.ast.List;
 import abs.frontend.ast.MethodImpl;
 import abs.frontend.ast.MethodModifier;
@@ -18,8 +19,14 @@ import abs.frontend.ast.Modifier;
 import abs.frontend.ast.ModifyClassModifier;
 import abs.frontend.ast.ModifyMethodModifier;
 import abs.frontend.ast.ModuleModifier;
+import abs.frontend.ast.ParamDecl;
 import abs.frontend.ast.RemoveClassModifier;
 import abs.frontend.ast.RemoveMethodModifier;
+import abs.frontend.ast.TraitExpr;
+import abs.frontend.ast.TraitNameExpr;
+import abs.frontend.ast.TraitSetExpr;
+import abs.frontend.delta.traittype.dependency.HasMethodDep;
+import abs.frontend.delta.traittype.dependency.TypeDep;
 
 /**
  *   The type of a delta.
@@ -42,7 +49,14 @@ public class DeltaType {
             if(modMod instanceof AddClassModifier){
                 AddClassModifier classMod = (AddClassModifier)modMod;
                 preType = new DeltaInnerAbsType(classMod.getClassDecl().getName());
-                postType = new DeltaInnerPreType(classMod.getClassDecl());   
+                DeltaInnerPreType pp = new DeltaInnerPreType(classMod.getClassDecl());   
+                for (InterfaceTypeUse impl : classMod.getClassDecl().getImplementedInterfaceUseList()) {
+                    pp.addDep(new TypeDep(impl.getName()));
+                }
+                for (ParamDecl param : classMod.getClassDecl().getParams()) {
+                    pp.addDep(new TypeDep(param.getChild(0).toString()));                    
+                }
+                postType = pp;
             }
             if(modMod instanceof RemoveClassModifier){
                 RemoveClassModifier classMod = (RemoveClassModifier)modMod;
@@ -80,10 +94,12 @@ public class DeltaType {
             postType.add(abs);
         } else if(classSubMod instanceof ModifyMethodModifier){
             MethodImpl impl = ((ModifyMethodModifier)classSubMod).getMethodImpl();
-            TraitInnerPreType pre = new TraitInnerPreType(impl, true);
-            TraitInnerPreType post = new TraitInnerPreType(impl, false);
-            preType.add(pre);
-            postType.add(post);
+            if(impl != null){
+                TraitInnerPreType pre = new TraitInnerPreType(impl, true);
+                TraitInnerPreType post = new TraitInnerPreType(impl, false);
+                preType.add(pre);
+                postType.add(post);
+            } 
         } 
         
     }

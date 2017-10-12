@@ -24,7 +24,7 @@ aspect TraitTypeChecker {
         }
         for (DeltaDecl deltaDecl : getDeltaDecls()) {
             System.out.println("found delta: "+deltaDecl.getName());
-            if(isPartiallyTypeable(deltaDecl) && isPartiallyTypeableDelta2(deltaDecl)&& isPartiallyTypeableDelta(deltaDecl)){
+            if(isPartiallyTypeable(deltaDecl) && isPartiallyTypeableDelta(deltaDecl)){
                 DeltaType dt = new DeltaType(deltaDecl, tTypes);
                 System.out.println("  "+dt);
             }
@@ -53,17 +53,6 @@ aspect TraitTypeChecker {
       return true;
   }
   
-  
-  private boolean Model.isPartiallyTypeableDelta2(ASTNode<?> node) {
-      if(node instanceof TraitNameExpr) {
-          System.out.println("  referencing trait types into delta types is not supported yet!");
-          return false;
-      }
-      for(int i = 0; i < node.getNumChild(); i++){
-          if(!isPartiallyTypeableDelta2(node.getChild(i))) return false;
-      }
-      return true;
-}
   
   private boolean Model.isPartiallyTypeable(ASTNode<?> node) {
       if(node instanceof FnApp) {

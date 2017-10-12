@@ -5,6 +5,7 @@
 package abs.frontend.delta.traittype.dependency;
 
 public class TypeOfLocation extends TypeOfDependency {
+    public static final TypeOfLocation SELF = new TypeOfLocation("This");
     public TypeOfLocation(String name) {
         super(name);
     }

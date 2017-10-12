@@ -5,8 +5,10 @@
 package abs.frontend.delta.traittype.layertype;
 
 import abs.frontend.analyser.SemanticConditionList;
+import abs.frontend.ast.ASTNode;
 import abs.frontend.ast.MethodImpl;
 import abs.frontend.ast.MethodSig;
+import abs.frontend.ast.OriginalCall;
 import abs.frontend.delta.traittype.dependency.DependencyList;
 
 public class MethodFType extends LayerTwoType {
@@ -22,6 +24,8 @@ public class MethodFType extends LayerTwoType {
         SemanticConditionList s = new SemanticConditionList();
         try {
             met.getBlock().partialTypeCheck(s,deps);
+            usesOrig = hasOriginal(met);
+            if(usesOrig) System.out.println("WARNING: Original call detected");
         } catch (Exception e){
       //      System.out.println(e);
         } finally {
@@ -31,4 +35,14 @@ public class MethodFType extends LayerTwoType {
         }
     }
 
+    private static boolean hasOriginal(ASTNode<?> node){
+        if(node instanceof OriginalCall) return true;
+        for(int i = 0; i < node.getNumChild(); i++){
+            if(hasOriginal(node.getChild(i))) return true;
+        }
+        return false;
+    }
+    
 }
+
+

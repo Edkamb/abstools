@@ -7,8 +7,8 @@ import abs.frontend.parser.*;
 
 aspect TraitResolver {
 
-    public abstract TraitSetExpr MethodModifier.applyToSet(TraitSetExpr set, ClassDecl cd);
-    public abstract TraitSetExpr TraitExpr.resolve(ClassDecl cd);
+    public abstract TraitSetExpr MethodModifier.applyToSet(TraitSetExpr set, Model cd);
+    public abstract TraitSetExpr TraitExpr.resolve(Model cd);
     
     private void ModifyMethodModifier.replaceOriginal(TraitSetExpr set, MethodImpl met, MethodImpl flattened) {
         //collect all original calls
@@ -43,12 +43,12 @@ aspect TraitResolver {
         }      
     }
     
-    public TraitSetExpr RemoveMethodModifier.applyToSet(TraitSetExpr set, ClassDecl cd) throws DeltaModellingException{
+    public TraitSetExpr RemoveMethodModifier.applyToSet(TraitSetExpr set, Model cd) throws DeltaModellingException{
         applyToList(set.getMethodImplList());
         return set;
     }
     
-    public TraitSetExpr ModifyMethodModifier.applyToSet(TraitSetExpr set, ClassDecl cd){
+    public TraitSetExpr ModifyMethodModifier.applyToSet(TraitSetExpr set, Model cd){
         TraitSetExpr curr = set;
         TraitExpr tt = getTraitExpr();
         ArrayList<MethodModifier> operations = new ArrayList<>();
@@ -103,7 +103,7 @@ aspect TraitResolver {
         return set;
     }
    
-    public TraitSetExpr AddMethodModifier.applyToSet(TraitSetExpr set, ClassDecl cd){
+    public TraitSetExpr AddMethodModifier.applyToSet(TraitSetExpr set, Model cd){
         TraitSetExpr curr = set;
         TraitExpr tt = getTraitExpr();
         ArrayList<MethodModifier> operations = new ArrayList<>();
@@ -133,11 +133,10 @@ aspect TraitResolver {
         return curr;
     }
   
-    public TraitSetExpr TraitNameExpr.resolve(ClassDecl cd) throws DeltaModellingException {
+    public TraitSetExpr TraitNameExpr.resolve(Model cd) throws DeltaModellingException {
 
-        List<Decl> list = cd.getModuleDecl().getDecls();
         TraitExpr decl = null;
-        for (Decl sDecl : list) {
+        for (Decl sDecl : cd.getDecls()) {
             if (sDecl instanceof TraitDecl) {
                 TraitDecl tDecl = (TraitDecl) sDecl;
                 if (tDecl.getName().equals(getName())) {
@@ -153,11 +152,11 @@ aspect TraitResolver {
 		return decl.resolve(cd);
     }
     
-    public TraitSetExpr TraitSetExpr.resolve(ClassDecl cd) throws DeltaModellingException {
+    public TraitSetExpr TraitSetExpr.resolve(Model cd) throws DeltaModellingException {
 	    return this;
     }
     
-    public TraitSetExpr TraitModifyExpr.resolve(ClassDecl cd) throws DeltaModellingException {
+    public TraitSetExpr TraitModifyExpr.resolve(Model cd) throws DeltaModellingException {
         TraitSetExpr set = getTraitExpr().resolve(cd);
         MethodModifier oper = this.getMethodModifier();
         return oper.applyToSet(set, cd);

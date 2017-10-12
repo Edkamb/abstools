@@ -19,19 +19,16 @@ aspect DeltaModifierApplicator {
 	 * These methods simplify nested trait operators in deltas and collapse them to operations on sets
 	 */
     public void ModuleModifier.collapseTraitModifiers() { }
-    public void Modifier.collapseTraitModifiers(ClassDecl cd) { }
+    public void Modifier.collapseTraitModifiers(Model cd) { }
     @Override
     public void ModifyClassModifier.collapseTraitModifiers() {
-    	ArrayList<Modifier> cop = new ArrayList<Modifier>();
-    	for( Modifier mod :getModifierList() ) cop.add(mod);
-        for ( Modifier mod : cop ) {
-            if(getClassDecl() != null)  mod.collapseTraitModifiers(getClassDecl());
+        for ( Modifier mod : getModifierList() ) {
+            mod.collapseTraitModifiers(getModel());
         }
     }
 
     @Override
-    public void DeltaTraitModifier.collapseTraitModifiers(ClassDecl cd) {
-
+    public void DeltaTraitModifier.collapseTraitModifiers(Model cd) {
         ArrayList<MethodModifier> operations = new ArrayList<>();
         rewriteToList(getMethodModifier(), operations);
         if(operations.size() >= 2){
@@ -53,7 +50,7 @@ aspect DeltaModifierApplicator {
     }
 
     @Override
-    public void ModifyMethodModifier.collapseTraitModifiers(ClassDecl cd){
+    public void ModifyMethodModifier.collapseTraitModifiers(Model cd){
         TraitExpr tt = getTraitExpr();
         TraitSetExpr set = tt.resolve(cd);
         ModifyMethodModifier newMod = this.copy();
@@ -65,7 +62,7 @@ aspect DeltaModifierApplicator {
 
 
     @Override
-    public void AddMethodModifier.collapseTraitModifiers(ClassDecl cd){
+    public void AddMethodModifier.collapseTraitModifiers(Model cd){
         TraitExpr tt = getTraitExpr();
         TraitSetExpr set = tt.resolve(cd);
         AddMethodModifier newMod = this.copy();
@@ -77,7 +74,7 @@ aspect DeltaModifierApplicator {
 
 
     @Override
-    public void RemoveMethodModifier.collapseTraitModifiers(ClassDecl cd) {
+    public void RemoveMethodModifier.collapseTraitModifiers(Model cd) {
         //System.out.println("collapsing rem!"+this);
     }
 

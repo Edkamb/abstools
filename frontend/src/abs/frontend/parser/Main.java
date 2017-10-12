@@ -262,7 +262,7 @@ public class Main {
         rewriteModel(m, product);
         //TODO: after type checking
         m.flattenTraitOnly();
-       // m.collapseTraitModifiers(); 
+        m.collapseTraitModifiers(); 
         m.analyzeSPL();
 
         // check PL before flattening
