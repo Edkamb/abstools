@@ -1,56 +1,123 @@
 module Testing;
-
+interface J { Unit mJ(); }
+class CJ implements J {
+	Int jJ = 0;
+    Unit nJ(){ this.jJ = this.jJ + 1; }
+}
+module ModuleN2;
 interface I { Unit m(); }
 class C implements I {
-	Int i = 0;
 	Int j = 0;
     uses T;
     Unit n(){ this.j = this.i + 1; }
 }
+
 trait T = { Unit m(){ this.i = this.i + 1;}}
+
+
+module OtModule;
 {
 
 }
 
+delta OrigDelta;
+modifies class Testing.Q{
+    adds Unit m(J j){ j!mJ(); I c = new C();}
+    removes Unit mRem(Z z);
+}
 
 delta D;
 modifies class Testing.C{
-        adds Int i = 0;
         removes Unit n();
+        adds Int j = 0;
         modifies T 
-        //{ 
-        //    Unit m(){ println("a");}
-        //}  
 }
 
 
 delta D2;
-uses Testing;
+uses OtModule;
 adds class E(){
     Rat r = 1/2;
     Unit q(Int i){ 
         Rat f = 1/8; 
         this.r = i/this.s; 
         O other = new OC();
+        ding = new CO();
         this.aField!meth();
         other!wtf();
     }
     Int asd(Int i){ 
         Fut<Unit> f = this!q(i*100); 
         f.get; 
+        this!q(iField);
         return i;
     }
 }
 
 
 delta D3;
-uses Testing;
+uses OtModule;
 removes class E;
+
+delta D4;
+uses Testing;
+modifies class E{
+    modifies Int asd(Rat i){
+        future.get;
+        Int oResult = oFuture.get;
+        fResult = qGet.get;
+        await yaf? & zaf?;
+        nof!hallo(10,yaf,pof);
+    }
+}
+
+delta D5;
+uses Testing;
+adds class F{
+   Unit m(I i){
+       f = i!m(10,True,g);
+       Fut<Bool> bf = j!nm();
+       res = f.get;
+   }
+   Unit n(){
+      Int q = (h-4)-(10 -f);
+      q = g;
+   }
+
+}
+
+delta D6;
+uses OtModule;
+adds class G implements I {
+    Unit m(){ skip; }
+}
+
+delta D7;
+uses Testing;
+adds class H(Q q) implements J {
+    Unit n(I i){ this!o(); i!m(); i!n(); }
+}
+
+delta D8;
+uses Testing;
+adds class C implements I {
+    Int j = 0;
+    //Rat j = 0;
+    uses T;
+    //Unit n(Rat r){ this.j = this.i + 1; }
+    Unit n(){ this.j = this.i + 1; }
+}
 
 productline Line;
 features Feat;
 delta D when Feat;
 delta D2 when Feat;
 delta D3 when Feat;
+delta D4 when Feat;
+delta D5 when Feat;
+delta D6 when Feat;
+delta D7 when Feat;
+delta D8 when Feat;
+delta OrigDelta when Feat;
 product Default (Feat); 
 
