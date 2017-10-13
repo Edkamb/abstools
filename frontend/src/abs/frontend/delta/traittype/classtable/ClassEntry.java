@@ -17,7 +17,7 @@ import abs.frontend.ast.MethodSig;
 
 public class ClassEntry {
     private final ArrayList<ElementEntry> elements = new ArrayList<>();
-    private final LinkedHashSet<String> implemented = new LinkedHashSet<>(); //TODO: module prefix
+    private final ArrayList<String> implemented = new ArrayList<>(); //TODO: module prefix
     public ClassEntry(ClassDecl cDecl) {
         enhance(cDecl);
     }
@@ -54,7 +54,7 @@ public class ClassEntry {
     public ArrayList<ElementEntry> getElements() {
         return elements;
     }
-    public LinkedHashSet<String> getImplemented() {
+    public ArrayList<String> getImplemented() {
         return implemented;
     }
 

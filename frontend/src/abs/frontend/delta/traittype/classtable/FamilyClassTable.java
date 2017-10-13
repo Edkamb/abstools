@@ -40,7 +40,7 @@ public class FamilyClassTable {
           //  l.add(name);
             lists.add(new LinkedList<>(entries.get(name).getImplemented()));
         }
-        System.out.println(lists);
+     //   System.out.println(lists);
         
         Model.sort(lists);
         while(lists.size() > 0){
@@ -107,8 +107,8 @@ public class FamilyClassTable {
             }
         }
         System.out.println(this);
-        System.out.println(this.isGloballyCycleFree());
-        System.out.println(this.isGloballyTypeUniform());
+        System.out.println("globally cycle-free? "+this.isGloballyCycleFree());
+        System.out.println("type-uniform? "+this.isGloballyTypeUniform());
     }
     
     private void handleModifier(Modifier mod, ClassEntry ce){
