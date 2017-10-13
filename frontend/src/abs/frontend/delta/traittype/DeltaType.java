@@ -22,10 +22,6 @@ import abs.frontend.ast.ModuleModifier;
 import abs.frontend.ast.ParamDecl;
 import abs.frontend.ast.RemoveClassModifier;
 import abs.frontend.ast.RemoveMethodModifier;
-import abs.frontend.ast.TraitExpr;
-import abs.frontend.ast.TraitNameExpr;
-import abs.frontend.ast.TraitSetExpr;
-import abs.frontend.delta.traittype.dependency.HasMethodDep;
 import abs.frontend.delta.traittype.dependency.TypeDep;
 
 /**
@@ -88,10 +84,10 @@ public class DeltaType {
         } else if(classSubMod instanceof AddMethodModifier){
             MethodImpl impl = ((AddMethodModifier)classSubMod).getMethodImpl();
             TraitInnerAbsType abs = new TraitInnerAbsType(impl.getMethodSig());
-            TraitInnerPreType pre = new TraitInnerPreType(impl, true);
+            TraitInnerPreType pre = new TraitInnerPreType(impl, false);
             preType.add(abs);
             postType.add(pre);
-            postType.add(abs);
+           // postType.add(abs);
         } else if(classSubMod instanceof ModifyMethodModifier){
             MethodImpl impl = ((ModifyMethodModifier)classSubMod).getMethodImpl();
             if(impl != null){

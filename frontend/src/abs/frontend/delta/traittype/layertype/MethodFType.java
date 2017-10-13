@@ -9,7 +9,9 @@ import abs.frontend.ast.ASTNode;
 import abs.frontend.ast.MethodImpl;
 import abs.frontend.ast.MethodSig;
 import abs.frontend.ast.OriginalCall;
+import abs.frontend.ast.ParamDecl;
 import abs.frontend.delta.traittype.dependency.DependencyList;
+import abs.frontend.delta.traittype.dependency.TypeDep;
 
 public class MethodFType extends LayerTwoType {
     private MethodSig sig;
@@ -23,6 +25,9 @@ public class MethodFType extends LayerTwoType {
         this.sig = met.getMethodSig();
         SemanticConditionList s = new SemanticConditionList();
         try {
+            for ( ParamDecl pDecl : met.getMethodSig().getParams()) {
+                deps.add(new TypeDep(pDecl.getChild(0).toString()));
+            }
             met.getBlock().partialTypeCheck(s,deps);
             usesOrig = hasOriginal(met);
             if(usesOrig) System.out.println("WARNING: Original call detected");

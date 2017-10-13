@@ -6,13 +6,32 @@ aspect TraitTypeChecker {
         System.out.println("Starting inference of delta and trait types");
         System.out.println();
         
-        //collect all Traits TODO: this step is a left over from earlier stages
+        FamilyClassTable fct = new FamilyClassTable(this);
+        
         LinkedList<TraitDecl> list = new LinkedList<>();
         for (Decl decl : getDecls()) {
             if(decl instanceof TraitDecl){
                 list.add((TraitDecl)decl);
             }
         }
+        System.out.println();
+        System.out.println("Inference of core type...");
+        System.out.println();
+
+        for (Decl decl : getDecls()) {
+            if(decl instanceof ClassDecl && !decl.getModuleDecl().getName().startsWith("ABS")){
+                //System.out.println(decl.getName() + " - " + decl.getModuleDecl().getName());
+                DeltaInnerPreType pre = new DeltaInnerPreType((ClassDecl) decl);
+                System.out.println(pre);
+            }
+            if(decl instanceof InterfaceDecl && !decl.getModuleDecl().getName().startsWith("ABS")){
+                //System.out.println(decl.getName() + " - " + decl.getModuleDecl().getName());
+                //System.out.println("No support for interfaces yet");
+           }
+        }
+        System.out.println();
+        System.out.println("Inference of trait types...");
+        System.out.println();
         HashMap<String, TraitType> tTypes = new HashMap<>();
         for (TraitDecl traitDecl : list) {
             System.out.println("found trait: "+traitDecl.getName());
@@ -22,6 +41,9 @@ aspect TraitTypeChecker {
                 System.out.println("  "+tt);
             } 
         }
+        System.out.println();
+        System.out.println("Inference of delta types...");
+        System.out.println();
         for (DeltaDecl deltaDecl : getDeltaDecls()) {
             System.out.println("found delta: "+deltaDecl.getName());
             if(isPartiallyTypeable(deltaDecl) && isPartiallyTypeableDelta(deltaDecl)){
