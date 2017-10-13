@@ -1,6 +1,8 @@
 import java.util.Map;
 import abs.frontend.delta.*;
 import abs.common.*;
+import abs.frontend.delta.traittype.*;
+import abs.frontend.delta.traittype.classtable.FamilyClassTable;
 
 aspect ProductFlattener {
 
@@ -366,7 +368,7 @@ aspect ProductFlattener {
     /**************************************************************************
      * Helper methods for trait application
      */
-    private void Model.sort(LinkedList<LinkedList<String>> lists) {
+    public static void Model.sort(LinkedList<LinkedList<String>> lists) {
         Collections.sort(lists, new Comparator<LinkedList<String>>() {
         @Override
         public int compare(LinkedList<String> o1, LinkedList<String> o2) {

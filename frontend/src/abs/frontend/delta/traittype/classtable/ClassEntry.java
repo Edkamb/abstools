@@ -4,6 +4,9 @@
  */
 package abs.frontend.delta.traittype.classtable;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 import abs.frontend.ast.ClassDecl;
@@ -13,14 +16,28 @@ import abs.frontend.ast.MethodImpl;
 import abs.frontend.ast.MethodSig;
 
 public class ClassEntry {
-    private final LinkedHashSet<ElementEntry> elements = new LinkedHashSet<>();
-    private final LinkedHashSet<String> implemented = new LinkedHashSet<>();
+    private final ArrayList<ElementEntry> elements = new ArrayList<>();
+    private final LinkedHashSet<String> implemented = new LinkedHashSet<>(); //TODO: module prefix
     public ClassEntry(ClassDecl cDecl) {
         enhance(cDecl);
     }
 
     public ClassEntry(String name) {
 
+    }
+    
+
+    public boolean isGloballyTypeUniform() {
+        HashMap<String, ElementEntry> seen = new HashMap<>();
+        for (ElementEntry elementEntry : elements) {
+            if(seen.containsKey(elementEntry.id())) {
+                if(elementEntry.carryEquals(seen.get(elementEntry.id()))) continue;
+                System.out.println("element "+elementEntry.id()+" violates type uniformity!");
+                return false;
+            }
+            seen.put(elementEntry.id(),elementEntry);
+        }
+        return true;
     }
 
     public void enhance(ClassDecl cDecl) {
@@ -34,7 +51,7 @@ public class ClassEntry {
     public String toString() {
         return "interfaces: "+implemented+"(" + elements + ")";
     }
-    public LinkedHashSet<ElementEntry> getElements() {
+    public ArrayList<ElementEntry> getElements() {
         return elements;
     }
     public LinkedHashSet<String> getImplemented() {
@@ -52,5 +69,6 @@ public class ClassEntry {
     public void enhance(MethodSig sig) {
         elements.add(new MethodEntry(sig));   
     }
+
     
 }

@@ -4,7 +4,10 @@
  */
 package abs.frontend.delta.traittype.classtable;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import abs.frontend.ast.AddClassModifier;
@@ -22,10 +25,45 @@ import abs.frontend.ast.ModifyMethodModifier;
 import abs.frontend.ast.ModuleModifier;
 import abs.frontend.ast.RemoveFieldModifier;
 import abs.frontend.ast.RemoveMethodModifier;
+import abs.frontend.ast.TraitDecl;
+import abs.frontend.delta.DeltaModellingException;
 
 public class FamilyClassTable {
     private final LinkedHashMap<String, ClassEntry> entries = new LinkedHashMap<>();
 
+    
+    public boolean isGloballyCycleFree(){
+        
+        //LinkedList<String> l = new LinkedList<>();
+        LinkedList<LinkedList<String>> lists = new LinkedList<>();
+        for (String name : entries.keySet()) {
+          //  l.add(name);
+            lists.add(new LinkedList<>(entries.get(name).getImplemented()));
+        }
+        System.out.println(lists);
+        
+        Model.sort(lists);
+        while(lists.size() > 0){
+            LinkedList<String> l = lists.pop();
+            if(l.size() > 1) return false;
+            if(l.size() < 1) continue;
+            String n = l.pop();
+            for (LinkedList<String> listOther : lists) {
+                while(listOther.remove(n));
+            }
+            Model.sort(lists);
+        }
+        return true;
+    }
+    
+    public boolean isGloballyTypeUniform(){
+        for (String key : entries.keySet()) {
+            if(!entries.get(key).isGloballyTypeUniform()) return false;
+        }
+        return true;
+    }
+    
+    
     public FamilyClassTable(Model m) {
         //collect all class decl
         for (Decl decl : m.getDecls()) {
@@ -69,6 +107,8 @@ public class FamilyClassTable {
             }
         }
         System.out.println(this);
+        System.out.println(this.isGloballyCycleFree());
+        System.out.println(this.isGloballyTypeUniform());
     }
     
     private void handleModifier(Modifier mod, ClassEntry ce){

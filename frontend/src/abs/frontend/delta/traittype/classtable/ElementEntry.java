@@ -5,5 +5,9 @@
 package abs.frontend.delta.traittype.classtable;
 
 public abstract class ElementEntry {
-
+    public abstract String id();
+    public abstract Object content();
+    public boolean carryEquals(Object obj){
+        return equals(obj);
+    }
 }

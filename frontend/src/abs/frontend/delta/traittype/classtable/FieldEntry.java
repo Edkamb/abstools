@@ -7,6 +7,10 @@ package abs.frontend.delta.traittype.classtable;
 public class FieldEntry extends ElementEntry {
     private final String name;
     private final String type;
+    
+
+    public String id(){return name;}
+    public Object content(){return type;}
     public FieldEntry(String name, String type) {
         super();
         this.name = name;
