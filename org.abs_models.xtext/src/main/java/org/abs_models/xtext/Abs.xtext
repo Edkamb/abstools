@@ -87,6 +87,7 @@ Declaration
         | traitDeclaration=TraitDeclaration
         | interfaceDeclaration=InterfaceDeclaration
         | classDeclaration=ClassDeclaration
+        | compDeclaration=CompDeclaration
         )
     ;
 
@@ -137,6 +138,19 @@ TraitOperation
     | 'modifies' modifiedExpression=BasicTraitExpression
     ;
 
+CompDeclaration
+    :
+    'model' name=QualifiedTypeIdentifier (comment?=STRINGLITERAL)? 
+    (vars+=CompVariableDeclaration ';')* 
+    'equation' 
+    (equations+=InternalEquation';')* 
+    'end' nameEnd=QualifiedTypeIdentifier ';' 
+    ;
+
+CompVariableDeclaration : (constant?='constant')? (parameter?='parameter')? type=TypeUseNoAnnotations name=IDENTIFIER (('(' (inits+=CompInst)* ')') | ('='initExp?=Expression))? (comment?=STRINGLITERAL)?;
+CompInstDeclaration : annotations=Annotations type=TypeUseNoAnnotations name=IDENTIFIER'(' (inits += CompInst (',' inits+=CompInst)*)? ')';
+CompInst : name=IDENTIFIER '=' init=Expression;
+
 InterfaceDeclaration
     : (base?='base')? (relative?='relative')? 'interface' name=QualifiedTypeIdentifier
         ('extends' superinterfaces+=InterfaceTypeIdentifier (',' superinterfaces+=InterfaceTypeIdentifier)* )?
@@ -149,11 +163,12 @@ MethodSignature
     ;
 
 ClassDeclaration
-    : (base?='base')? (relative?='relative')? 'class' name=QualifiedTypeIdentifier
+    :  (base?='base')? (relative?='relative')? 'class' name=QualifiedTypeIdentifier
         ( '(' ( arguments+=Parameter (',' arguments+=Parameter)* )? ')' )?
         ( 'implements' interfaces+=InterfaceTypeIdentifier (',' interfaces+=InterfaceTypeIdentifier)* )?
         '{'
         (fields+=FieldDeclaration ';')*
+        (physical?=PhysicalBlock)?
         ( '{' initblockStatements+=Statement* '}' )?
         ( 'recover' '{' (recoverbranches+=SwitchStatementBranch)* '}' )?
         ( 'uses' usedTraits+=TraitExpression ';' )*
@@ -161,8 +176,10 @@ ClassDeclaration
         '}'
     ;
 
+PhysicalBlock : 'physical' '{' (comps+=CompInstDeclaration ';')* equats += InstEquation* '}' ;
+
 FieldDeclaration
-    : annotations=Annotations type=TypeUseNoAnnotations name=IDENTIFIER
+    :    annotations=Annotations type=TypeUseNoAnnotations name=IDENTIFIER
         (hasInit?='=' init=Expression)?
     ;
 
@@ -237,6 +254,7 @@ AndGuard returns Guard
 SingleGuard returns Guard
     : {ExpressionGuard} expression=Expression claim?='?'?
     | {DurationGuard} 'duration' '(' min=Expression ',' max=Expression ')'
+    | {DifferentialGuard} 'diff' expression=Expression 
     ;
 
 SwitchStatementBranch : pattern=Pattern '=>' body=Statement ;
@@ -249,6 +267,68 @@ Pattern
     | {VariablePattern} value=IDENTIFIER
     | {ConstructorPattern} constructorname=QualifiedTypeIdentifier
         ( '(' (arguments+=Pattern (',' arguments+=Pattern)* )? ')' )?
+    ;
+
+
+InstEquation
+    : 'is' '('left=CompAccessExpression ',' right=CompExpression ')'';'
+    | CompEquation
+    ;
+
+InternalEquation
+    : 'connect''(' ileft=CompAccessExpression',' iright=CompAccessExpression')'
+    | CompEquation
+    ;
+
+CompEquation : lhs=CompExpression '=' rhs=CompExpression; //was PlusMinus
+
+CompAccessExpression returns Expression
+    : (component?=IDENTIFIER '.')? variablename=IDENTIFIER
+    ;
+
+CompExpression returns Expression
+    : left=CompDMExpression
+        (( '+'
+         | '-')
+        right=CompDMExpression)*
+    ; // left-assoc
+
+CompDMExpression returns Expression
+    : left=CompPrimaryExpression
+        ((  '*'
+         | '/'
+         |  '%')
+        right=CompPrimaryExpression)*
+    ; // left-assoc
+
+
+CompPrimaryExpression returns Expression
+    :  '(' CompExpression ')'
+    | CompUnaryExpression
+    | CompFunctionAppExpression
+    | DerivativeExpression
+    | CompAtomicExpression
+    | CompAccessExpression
+    ;
+
+CompAtomicExpression returns Expression
+    : INTLITERAL
+    | FLOATLITERAL
+    | CompAccessExpression
+    ;
+
+
+DerivativeExpression returns Expression: 'der' '(' param = Expression ')';
+
+CompUnaryExpression returns Expression
+    : ( '!' CompPrimaryExpression //{NotExpression.body=current}
+      | '-' CompPrimaryExpression //{NegExpression.body=current}
+      // | '+' CompPrimaryExpression //{PosExpression.body=current}
+    )
+    ;
+CompFunctionAppExpression returns Expression
+    : functionname=QualifiedIdentifier
+        '(' (arguments+=CompExpression ( ',' arguments+=CompExpression)* )? ')'
     ;
 
 // Expressions
@@ -267,6 +347,7 @@ Pattern
 Expression
     : OrExpression
     ;
+
 
 // See http://www.eclipse.org/Xtext/documentation/307_special_languages.html#expressions
 
@@ -554,15 +635,20 @@ ClassModifier
         ( addedField=FieldDeclaration ';'
         | '{' addedMethods+=MethodDeclaration* '}'
         | addedMethods+=MethodDeclaration
-        | addedTrait=TYPE_IDENTIFIER)
+        | addedTrait=TYPE_IDENTIFIER
+        | addedPhysical=PhysicalBlock
+        )
     | 'removes'
         ( removedField=FieldDeclaration ';'
         | '{' ( removedMethods+=MethodSignature ';' )* '}'
-        | removedMethods+=MethodSignature ';' )
+        | removedMethods+=MethodSignature ';' 
+        | removesPhysical?='physical' ';'
+        )
     | 'modifies'
         ( modifiedMethods+=MethodDeclaration
         | '{' modifiedMethods+=MethodDeclaration* '}'
         | modifiedTrait=TYPE_IDENTIFIER
+        | modifiedPhysical=PhysicalBlock
         )
     ;
 
