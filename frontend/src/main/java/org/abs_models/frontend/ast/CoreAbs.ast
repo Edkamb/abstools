@@ -8,6 +8,7 @@
 
 // needed for lists of strings
 Name ::= <Name>;
+ModelicaComment ::= <Comment>;
 
 abstract CoreModel ::= CompilationUnit* ;
 //Model ::= CompilationUnit* ;
@@ -68,9 +69,9 @@ ConstructorArg ::= TypeUse [SelectorName:Name];
 
 /************ HABS *************/
 
-CompDecl : Decl ::= <Comment> <Name> CompVarDecl* InternalEqu*;
-CompVarDecl : VarOrFieldDecl ::= TypeUse <Name> <Comment> Inits:CompInit* <Constant:boolean> <Parameter:boolean> [Initial:Exp];
-CompInit ::= <Name> Initial:Exp;
+CompDecl : Decl ::= [ModelicaComment] CompVarDecl* InternalEqu*;
+CompVarDecl : VarOrFieldDecl ::= TypeUse [ModelicaComment] Inits:CompInit* <Constant:boolean> <Parameter:boolean> [Initial:Exp];
+CompInit ::= <Target> Initial:Exp;
 abstract Equ;
 abstract InternalEqu : Equ;
 ConnectEqu : InternalEqu ::= Left:CompAccessExpr Right:CompAccessExpr;
@@ -78,6 +79,7 @@ ConnectEqu : InternalEqu ::= Left:CompAccessExpr Right:CompAccessExpr;
 abstract CompExpr;
 CompAccessExpr : CompExpr ::= <Target> <Property>;
 
+/************  *************/
 
 
 abstract Modifier;

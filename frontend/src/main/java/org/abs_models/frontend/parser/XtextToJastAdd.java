@@ -319,6 +319,11 @@ public class XtextToJastAdd {
         } else if (xtext_decl.getClassDeclaration() != null) {
             result = fromXtext(xtext_decl.getClassDeclaration());
             ((ClassDecl)result).setAnnotationList(annotationsfromXtext(xtext_decl.getAnnotations()));
+        } else if (xtext_decl.getCompDeclaration() != null){
+            result = fromXtext(xtext_decl.getCompDeclaration());
+            //((CompDecl)result).setAnnotationList(annotationsfromXtext(xtext_decl.getAnnotations()));
+            //HABS 
+            ////throw new NotImplementedYetException(new ASTNode(),"hook correct");
         } else {
             throw new NotImplementedYetException(new ASTNode(),
                                                  "No conversion to JastAdd implemented for Xtext declaration node "
@@ -540,6 +545,20 @@ public class XtextToJastAdd {
         }
         result.setReturnType(fromXtext(xtext_decl.getResulttype()));
         return nodeWithLocation(result, xtext_decl);
+    }
+
+    static CompDecl fromXtext(final org.abs_models.xtext.abs.CompDeclaration xtext_decl) {
+        final CompDecl result = new CompDecl();
+        System.out.println("im here: "+result);
+        result.setName(xtext_decl.getName());
+        if(xtext_decl.getComment() != null){
+            final ModelicaComment comment = new ModelicaComment();
+            comment.setComment(xtext_decl.getComment());
+            result.setModelicaComment(comment);
+        }
+
+        //HABS
+        return result;
     }
 
     static ClassDecl fromXtext(final org.abs_models.xtext.abs.ClassDeclaration xtext_decl) {
@@ -1825,5 +1844,7 @@ public class XtextToJastAdd {
         }
         return nodeWithLocation(result, xtext_exp);
     }
+
+
 
 }

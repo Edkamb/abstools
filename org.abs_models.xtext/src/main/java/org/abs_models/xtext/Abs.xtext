@@ -140,7 +140,7 @@ TraitOperation
 
 CompDeclaration
     :
-    'model' name=QualifiedTypeIdentifier (comment?=STRINGLITERAL)? 
+    'model' name=QualifiedTypeIdentifier (comment=STRINGLITERAL)? 
     (vars+=CompVariableDeclaration ';')* 
     'equation' 
     (equations+=InternalEquation';')* 

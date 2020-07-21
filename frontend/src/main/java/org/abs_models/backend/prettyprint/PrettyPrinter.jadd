@@ -1309,4 +1309,16 @@ aspect doPrettyPrinter {
     public void TraitUse.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
 
     }
+
+    public void CompDecl.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
+        stream.print("model ");
+        stream.print(getName());
+        stream.print(" "+ getModelicaComment().getComment());
+        stream.println();
+        stream.print("equation");
+        stream.println();
+        stream.print("end ");
+        stream.print(getName());
+        stream.print(";");
+    }
 }
