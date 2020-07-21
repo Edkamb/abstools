@@ -965,6 +965,13 @@ aspect GenerateMaude {
     }
 
     public void TraitDecl.generateMaude(PrintStream stream) {}
+	public void CompDecl.generateMaude(PrintStream stream) {}
+	public void CompVarDecl.generateMaude(PrintStream stream) {}
+	public void CompInit.generateMaude(PrintStream stream) {}
+	public void Equ.generateMaude(PrintStream stream) {}
+
+
+
   
 
 }

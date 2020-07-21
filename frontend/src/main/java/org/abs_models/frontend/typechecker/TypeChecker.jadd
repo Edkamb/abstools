@@ -1391,7 +1391,37 @@ aspect TypeCheckProductline {
 	eq AppCondAnd.refersTo(Feature f) = getLeft().refersTo(f) || getRight().refersTo(f);
 	eq AppCondOr.refersTo(Feature f) = getLeft().refersTo(f) || getRight().refersTo(f);
 	eq AppCondNot.refersTo(Feature f) = getAppCond().refersTo(f);
+
+    public void CompDecl.typeCheck(SemanticConditionList e) {
+        // 1. unique name
+        // 2. all used CompDecl available
+        // 3. typing of expressions/equations
+        // 4. all directly assigned parameter available
+        // 5. all connected accesses performed correctly
+    }
+
+    public void CompVarDecl.typeCheck(SemanticConditionList e) {
+        if(hasInitial()){
+            Type t = getInitial().getType();
+            if (! t.isNumericType() ) {
+                e.add(new TypeError(this, ErrorMessage.EXPECTED_NUMERIC_TYPE, t));
+            }
+        }
+    }
+
+    public void CompInit.typeCheck(SemanticConditionList e) {
+        Type t = getInitial().getType();
+        if (! t.isNumericType() ) {
+            e.add(new TypeError(this, ErrorMessage.EXPECTED_NUMERIC_TYPE, t));
+        }
+    }
+
+    public void Equ.typeCheck(SemanticConditionList e) {
+
+    }
 }
+
+
 
 // Local Variables:
 // mode: java

@@ -1181,6 +1181,15 @@ aspect GenerateJava {
     public void ModifyMethodModifier.generateJavaDynamic(PrintStream stream) { }
     public void ModifyMethodModifier.generateJava(PrintStream stream) { }
 
+	public void CompDecl.generateJava(PrintStream stream) {}
+	public void CompVarDecl.generateJava(PrintStream stream) {}
+	public void CompInit.generateJava(PrintStream stream) {}
+	public void Equ.generateJava(PrintStream stream) {}
+	public void CompDecl.generateJavaDynamic(PrintStream stream) {}
+	public void CompVarDecl.generateJavaDynamic(PrintStream stream) {}
+	public void CompInit.generateJavaDynamic(PrintStream stream) {}
+	public void Equ.generateJavaDynamic(PrintStream stream) {}
+
 }
 
 

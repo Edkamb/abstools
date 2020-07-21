@@ -73,6 +73,7 @@ aspect Typing {
     syn lazy Type Decl.getType();
     /**********/
     eq TraitDecl.getType() = getModel().getUnitType();
+    eq CompDecl.getType() = getModel().getUnitType();
     /**********/
     eq ClassDecl.getType() = new UnionType(this, getImplementedInterfaceUses());
     eq FunctionDecl.getType() = getTypeUse().getType();
@@ -116,6 +117,7 @@ aspect Typing {
     eq ConstructorArg.getType() = getTypeUse().getType();
     
     syn Type VarOrFieldDecl.getType();
+    eq CompVarDecl.getType() = getTypeUse().getType();
     eq FunctionParamDecl.getType() = getModel().getUnitType();
     eq TypedVarOrFieldDecl.getType() = getAccess().getType();
     eq PatternVarDecl.getType() {

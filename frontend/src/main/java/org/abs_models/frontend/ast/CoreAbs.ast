@@ -66,6 +66,19 @@ TypeSynDecl: TypeDecl ::= Annotation* Value:TypeUse ;
 
 ConstructorArg ::= TypeUse [SelectorName:Name];
 
+/************ HABS *************/
+
+CompDecl : Decl ::= <Comment> <Name> CompVarDecl* InternalEqu*;
+CompVarDecl : VarOrFieldDecl ::= TypeUse <Name> <Comment> Inits:CompInit* <Constant:boolean> <Parameter:boolean> [Initial:Exp];
+CompInit ::= <Name> Initial:Exp;
+abstract Equ;
+abstract InternalEqu : Equ;
+ConnectEqu : InternalEqu ::= Left:CompAccessExpr Right:CompAccessExpr;
+
+abstract CompExpr;
+CompAccessExpr : CompExpr ::= <Target> <Property>;
+
+
 
 abstract Modifier;
 abstract MethodModifier : Modifier;
