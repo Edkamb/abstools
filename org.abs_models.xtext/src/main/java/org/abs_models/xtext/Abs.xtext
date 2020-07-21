@@ -147,7 +147,9 @@ CompDeclaration
     'end' nameEnd=QualifiedTypeIdentifier ';' 
     ;
 
-CompVariableDeclaration : (constant?='constant')? (parameter?='parameter')? type=TypeUseNoAnnotations name=IDENTIFIER (('(' (inits+=CompInst)* ')') | ('='initExp?=Expression))? (comment?=STRINGLITERAL)?;
+CompVariableDeclaration : (constant?='constant')? (parameter?='parameter')? type=TypeUseNoAnnotations name=IDENTIFIER 
+                          ((instance?='(' (inits+=CompInst (',' inits+=CompInst)*)? ')') | ('='initExp=Expression))? 
+                          (comment=STRINGLITERAL)?;
 CompInstDeclaration : annotations=Annotations type=TypeUseNoAnnotations name=IDENTIFIER'(' (inits += CompInst (',' inits+=CompInst)*)? ')';
 CompInst : name=IDENTIFIER '=' init=Expression;
 

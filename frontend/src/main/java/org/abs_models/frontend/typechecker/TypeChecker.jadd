@@ -1400,11 +1400,14 @@ aspect TypeCheckProductline {
         // 5. all connected accesses performed correctly
     }
 
-    public void CompVarDecl.typeCheck(SemanticConditionList e) {
-        if(hasInitial()){
+    public void CompInstanceVarDecl.typeCheck(SemanticConditionList e) {
+    }
+
+    public void CompRealVarDecl.typeCheck(SemanticConditionList e) {
+        if( getInitial() != null){
             Type t = getInitial().getType();
             if (! t.isNumericType() ) {
-                e.add(new TypeError(this, ErrorMessage.EXPECTED_NUMERIC_TYPE, t));
+                e.add(new TypeError(this, ErrorMessage.EXPECTED_NUMERIC_TYPE, t)); // should only accept Real
             }
         }
     }

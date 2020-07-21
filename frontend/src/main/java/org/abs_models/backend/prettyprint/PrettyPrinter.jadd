@@ -1310,11 +1310,51 @@ aspect doPrettyPrinter {
 
     }
 
+    public void CompInit.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
+        stream.print(getTarget());
+        stream.print(" = ");
+        getInitial().doPrettyPrint(stream, formatter);
+    }
+
+    public void CompInstanceVarDecl.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
+        if(getConstant()) stream.print("constant ");
+        if(getParameter()) stream.print("parameter ");
+        getTypeUse().doPrettyPrint(stream, formatter);
+        stream.print(" ");
+        stream.print(getName());
+        stream.print("(");
+        if (getNumInits() > 0) {
+            getInitsList().doPrettyPrint(stream, formatter, ",");
+        }
+        stream.print(")");
+        if(getModelicaComment() != null) stream.print(" "+ getModelicaComment().getComment());
+    }
+
+    public void CompRealVarDecl.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
+        if(getConstant()) stream.print("constant ");
+        if(getParameter()) stream.print("parameter ");
+        getTypeUse().doPrettyPrint(stream, formatter);
+        stream.print(" ");
+        stream.print(getName());
+        if(getInitial() != null) {
+            stream.print(" = ");
+            getInitial().doPrettyPrint(stream, formatter);
+        }
+        if(getModelicaComment() != null) stream.print(" "+ getModelicaComment().getComment());
+    }
+
     public void CompDecl.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
         stream.print("model ");
         stream.print(getName());
-        stream.print(" "+ getModelicaComment().getComment());
+        if(getModelicaComment() != null) stream.print(" "+ getModelicaComment().getComment());
         stream.println();
+        formatter.afterOpenBrace();
+        for(CompVarDecl decl : getCompVarDecls()){
+            formatter.afterStmt();
+            decl.doPrettyPrint(stream, formatter);
+            stream.println(";");
+        }
+        formatter.beforeCloseBrace();
         stream.print("equation");
         stream.println();
         stream.print("end ");

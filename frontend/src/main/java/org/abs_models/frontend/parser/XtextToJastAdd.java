@@ -321,9 +321,6 @@ public class XtextToJastAdd {
             ((ClassDecl)result).setAnnotationList(annotationsfromXtext(xtext_decl.getAnnotations()));
         } else if (xtext_decl.getCompDeclaration() != null){
             result = fromXtext(xtext_decl.getCompDeclaration());
-            //((CompDecl)result).setAnnotationList(annotationsfromXtext(xtext_decl.getAnnotations()));
-            //HABS 
-            ////throw new NotImplementedYetException(new ASTNode(),"hook correct");
         } else {
             throw new NotImplementedYetException(new ASTNode(),
                                                  "No conversion to JastAdd implemented for Xtext declaration node "
@@ -549,7 +546,6 @@ public class XtextToJastAdd {
 
     static CompDecl fromXtext(final org.abs_models.xtext.abs.CompDeclaration xtext_decl) {
         final CompDecl result = new CompDecl();
-        System.out.println("im here: "+result);
         result.setName(xtext_decl.getName());
         if(xtext_decl.getComment() != null){
             final ModelicaComment comment = new ModelicaComment();
@@ -557,7 +553,51 @@ public class XtextToJastAdd {
             result.setModelicaComment(comment);
         }
 
+        for(org.abs_models.xtext.abs.CompVariableDeclaration arg : xtext_decl.getVars()) {
+            result.addCompVarDeclNoTransform(fromXtext(arg));
+        }
+
         //HABS
+        return result;
+    }
+
+    static CompVarDecl fromXtext(final org.abs_models.xtext.abs.CompVariableDeclaration xtext_decl) {
+        if(!xtext_decl.isInstance()){
+            final CompRealVarDecl result = new CompRealVarDecl();
+            result.setConstant(xtext_decl.isConstant());
+            result.setParameter(xtext_decl.isParameter());
+            result.setName(xtext_decl.getName());
+            result.setTypeUse(fromXtext(xtext_decl.getType()));
+            if(xtext_decl.getComment() != null){
+                final ModelicaComment comment = new ModelicaComment();
+                comment.setComment(xtext_decl.getComment());
+                result.setModelicaComment(comment);
+            } 
+            if(xtext_decl.getInitExp()!= null) result.setInitial(fromXtext(xtext_decl.getInitExp()));
+            return result;
+        } else {
+            final CompInstanceVarDecl result = new CompInstanceVarDecl();
+            result.setConstant(xtext_decl.isConstant());
+            result.setParameter(xtext_decl.isParameter());
+            result.setName(xtext_decl.getName());
+            result.setTypeUse(fromXtext(xtext_decl.getType()));
+            if(xtext_decl.getComment() != null){
+                final ModelicaComment comment = new ModelicaComment();
+                comment.setComment(xtext_decl.getComment());
+                result.setModelicaComment(comment);
+            } 
+            for(org.abs_models.xtext.abs.CompInst xtext_idecl : xtext_decl.getInits()){
+                result.addInitsNoTransform(fromXtext(xtext_idecl));
+            }
+            return result;
+        }
+
+    }
+
+    static CompInit fromXtext(final org.abs_models.xtext.abs.CompInst xtext_decl ){
+        final CompInit result = new CompInit();
+        result.setTarget(xtext_decl.getName());
+        result.setInitial(fromXtext(xtext_decl.getInit()));
         return result;
     }
 

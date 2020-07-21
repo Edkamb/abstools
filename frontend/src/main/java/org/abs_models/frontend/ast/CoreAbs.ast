@@ -70,7 +70,9 @@ ConstructorArg ::= TypeUse [SelectorName:Name];
 /************ HABS *************/
 
 CompDecl : Decl ::= [ModelicaComment] CompVarDecl* InternalEqu*;
-CompVarDecl : VarOrFieldDecl ::= TypeUse [ModelicaComment] Inits:CompInit* <Constant:boolean> <Parameter:boolean> [Initial:Exp];
+abstract CompVarDecl : VarOrFieldDecl ::= TypeUse [ModelicaComment] <Constant:boolean> <Parameter:boolean>;
+CompInstanceVarDecl : CompVarDecl ::= Inits:CompInit*;
+CompRealVarDecl : CompVarDecl ::= [Initial:Exp];
 CompInit ::= <Target> Initial:Exp;
 abstract Equ;
 abstract InternalEqu : Equ;
