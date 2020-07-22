@@ -52,7 +52,7 @@ ParametricPartialFunctionDecl : PartialFunctionDecl ::= Annotation* TypeParamete
 
 UnknownDecl: Decl; // Unknown declarations
 AmbiguousDecl: UnknownDecl ::= <Alternative:java.util.List<Decl>>;
-ClassDecl: BehaviorDecl ::= Annotation* Param:ParamDecl* ImplementedInterfaceUse:InterfaceTypeUse* TraitUse* [InitBlock] RecoverBranch:CaseBranchStmt* Field:FieldDecl* Method:MethodImpl* <Base:boolean> <Relative:boolean> ;
+ClassDecl: BehaviorDecl ::= Annotation* Param:ParamDecl* ImplementedInterfaceUse:InterfaceTypeUse* TraitUse* [InitBlock] [PhysicalBehavior] RecoverBranch:CaseBranchStmt* Field:FieldDecl* Method:MethodImpl* <Base:boolean> <Relative:boolean> ;
 FunctionDecl: BehaviorDecl ::= Annotation* TypeUse Param:ParamDecl* FunctionDef ;
 DataConstructor : Decl ::= <Name> ConstructorArg:ConstructorArg* ;
 ExceptionConstructor : DataConstructor ;
@@ -69,17 +69,33 @@ ConstructorArg ::= TypeUse [SelectorName:Name];
 
 /************ HABS *************/
 
-CompDecl : Decl ::= [ModelicaComment] CompVarDecl* InternalEqu*;
+CompDecl : Decl ::= [ModelicaComment] CompVarDecl* Equ*;
 abstract CompVarDecl : VarOrFieldDecl ::= TypeUse [ModelicaComment] <Constant:boolean> <Parameter:boolean>;
 CompInstanceVarDecl : CompVarDecl ::= Inits:CompInit*;
 CompRealVarDecl : CompVarDecl ::= [Initial:Exp];
 CompInit ::= <Target> Initial:Exp;
 abstract Equ;
+abstract ExternalEqu : Equ;
 abstract InternalEqu : Equ;
 ConnectEqu : InternalEqu ::= Left:CompAccessExpr Right:CompAccessExpr;
+IsEqu : ExternalEqu ::= Left:CompAccessExpr Right:CompAccessExpr;
+EquEqu : Equ ::= Left:CompExpr Right:CompExpr;
 
 abstract CompExpr;
 CompAccessExpr : CompExpr ::= <Target> <Property>;
+abstract CompUnary : CompExpr ::= Operand:CompExpr;
+abstract CompBinary : CompExpr ::= Left:CompExpr Right:CompExpr;
+CompPlusExpr : CompBinary;
+CompMinusExpr : CompBinary;
+CompMultExpr : CompBinary;
+CompDivExpr : CompBinary;
+CompModExpr : CompBinary;
+CompLiteral : CompExpr ::= <Content>;
+CompDerExpr : CompBinary;
+CompUnaryMinusExpr : CompUnary;
+CompFnApp : CompExpr ::= <Name> Param:CompExpr* ;
+
+PhysicalBehavior ::= CompInstanceVarDecl* Equ*;
 
 /************  *************/
 

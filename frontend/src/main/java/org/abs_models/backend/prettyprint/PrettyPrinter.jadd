@@ -883,6 +883,31 @@ aspect doPrettyPrinter {
 
         stream.println();
         formatter.afterStmt();
+        
+        if(hasPhysicalBehavior()){
+            formatter.beforeOpenBrace();
+            stream.println("physical {");
+            formatter.afterOpenBrace();
+
+            for(CompInstanceVarDecl cDecl : getPhysicalBehavior().getCompInstanceVarDecls()){
+                formatter.afterStmt();
+                cDecl.doPrettyPrint(stream, formatter);
+                stream.print(";");
+                stream.println();
+            }
+            for(Equ cDecl : getPhysicalBehavior().getEqus()){
+                formatter.afterStmt();
+                cDecl.doPrettyPrint(stream, formatter);
+                stream.print(";");
+                stream.println();
+            }
+            formatter.beforeCloseBrace();
+            formatter.afterStmt();
+            stream.print("}");
+            formatter.afterCloseBrace();
+            stream.println();
+            formatter.afterStmt();
+        }
 
         if (hasInitBlock()) {
             getInitBlock().doPrettyPrint(stream, formatter);
@@ -1355,10 +1380,41 @@ aspect doPrettyPrinter {
             stream.println(";");
         }
         formatter.beforeCloseBrace();
-        stream.print("equation");
-        stream.println();
+        stream.println("equation");
+        formatter.afterOpenBrace();
+        for(Equ equ : getEqus()){
+            formatter.afterStmt();
+            equ.doPrettyPrint(stream, formatter);
+            stream.println(";");
+        }
+        formatter.beforeCloseBrace();
         stream.print("end ");
         stream.print(getName());
         stream.print(";");
+    }
+
+
+    public void IsEqu.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
+        stream.print("is (");
+        getLeft().doPrettyPrint(stream, formatter);
+        stream.print(", ");
+        getRight().doPrettyPrint(stream, formatter);
+        stream.print(")");
+    }
+
+    public void ConnectEqu.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
+        stream.print("connect (");
+        getLeft().doPrettyPrint(stream, formatter);
+        stream.print(", ");
+        getRight().doPrettyPrint(stream, formatter);
+        stream.print(")");
+    }
+
+    public void CompAccessExpr.doPrettyPrint(PrintWriter stream, ABSFormatter formatter) {
+        if(getTarget() != ""){
+            stream.print(getTarget());
+            stream.print(".");
+        }
+        stream.print(getProperty());
     }
 }

@@ -170,7 +170,7 @@ ClassDeclaration
         ( 'implements' interfaces+=InterfaceTypeIdentifier (',' interfaces+=InterfaceTypeIdentifier)* )?
         '{'
         (fields+=FieldDeclaration ';')*
-        (physical?=PhysicalBlock)?
+        (physical=PhysicalBlock)?
         ( '{' initblockStatements+=Statement* '}' )?
         ( 'recover' '{' (recoverbranches+=SwitchStatementBranch)* '}' )?
         ( 'uses' usedTraits+=TraitExpression ';' )*
@@ -273,33 +273,33 @@ Pattern
 
 
 InstEquation
-    : 'is' '('left=CompAccessExpression ',' right=CompExpression ')'';'
+    : is?='is' '('left=CompAccessExpression ',' right=CompAccessExpression ')'';'
     | CompEquation
     ;
 
 InternalEquation
-    : 'connect''(' ileft=CompAccessExpression',' iright=CompAccessExpression')'
+    : connection?='connect' '(' ileft=CompAccessExpression',' iright=CompAccessExpression')'
     | CompEquation
     ;
 
-CompEquation : lhs=CompExpression '=' rhs=CompExpression; //was PlusMinus
+CompEquation : lhs=CompExpression '=' rhs=CompExpression; 
 
-CompAccessExpression returns Expression
-    : (component?=IDENTIFIER '.')? variablename=IDENTIFIER
+CompAccessExpression //returns Expression
+    : (component=IDENTIFIER '.')? variablename=IDENTIFIER
     ;
 
 CompExpression returns Expression
     : left=CompDMExpression
-        (( '+'
-         | '-')
+        (( plus?='+'
+         | minus?='-')
         right=CompDMExpression)*
     ; // left-assoc
 
 CompDMExpression returns Expression
     : left=CompPrimaryExpression
-        ((  '*'
-         | '/'
-         |  '%')
+        ((  mult?='*'
+         | div?='/'
+         |  mod?='%')
         right=CompPrimaryExpression)*
     ; // left-assoc
 
@@ -310,7 +310,6 @@ CompPrimaryExpression returns Expression
     | CompFunctionAppExpression
     | DerivativeExpression
     | CompAtomicExpression
-    | CompAccessExpression
     ;
 
 CompAtomicExpression returns Expression
@@ -320,13 +319,11 @@ CompAtomicExpression returns Expression
     ;
 
 
-DerivativeExpression returns Expression: 'der' '(' param = Expression ')';
+DerivativeExpression returns Expression
+: 'der' '(' param = Expression ')';
 
 CompUnaryExpression returns Expression
-    : ( '!' CompPrimaryExpression //{NotExpression.body=current}
-      | '-' CompPrimaryExpression //{NegExpression.body=current}
-      // | '+' CompPrimaryExpression //{PosExpression.body=current}
-    )
+    :  '-' CompPrimaryExpression //{NotExpression.body=current}
     ;
 CompFunctionAppExpression returns Expression
     : functionname=QualifiedIdentifier

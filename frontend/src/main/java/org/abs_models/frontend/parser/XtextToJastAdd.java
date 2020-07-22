@@ -544,6 +544,29 @@ public class XtextToJastAdd {
         return nodeWithLocation(result, xtext_decl);
     }
 
+
+    static PhysicalBehavior fromXtext(final org.abs_models.xtext.abs.PhysicalBlock xtext_decl) {
+        final PhysicalBehavior result = new PhysicalBehavior();
+        for(org.abs_models.xtext.abs.CompInstDeclaration comp : xtext_decl.getComps()){
+            result.addCompInstanceVarDeclNoTransform(fromXtext(comp));
+        }
+        for(org.abs_models.xtext.abs.InstEquation equ : xtext_decl.getEquats()){
+            Equ res = fromXtext(equ);            
+            if(res != null) result.addEquNoTransform(res);
+        }
+        return result;
+    }
+
+    static CompInstanceVarDecl fromXtext(final org.abs_models.xtext.abs.CompInstDeclaration xtext_decl) {
+        final CompInstanceVarDecl result = new CompInstanceVarDecl();
+        result.setName(xtext_decl.getName());
+        result.setTypeUse(fromXtext(xtext_decl.getType()));
+        for(org.abs_models.xtext.abs.CompInst xtext_idecl : xtext_decl.getInits()){
+            result.addInitsNoTransform(fromXtext(xtext_idecl));
+        }
+        return result;
+    }
+
     static CompDecl fromXtext(final org.abs_models.xtext.abs.CompDeclaration xtext_decl) {
         final CompDecl result = new CompDecl();
         result.setName(xtext_decl.getName());
@@ -557,7 +580,92 @@ public class XtextToJastAdd {
             result.addCompVarDeclNoTransform(fromXtext(arg));
         }
 
+        for(org.abs_models.xtext.abs.InternalEquation arg : xtext_decl.getEquations()) {
+            Equ i = fromXtext(arg);
+            if(i != null) result.addEquNoTransform(i);
+        }
+
         //HABS
+        return result;
+    }
+/*
+    static EquEqu fromXtext(final org.abs_models.xtext.abs.CompEquation xtext_decl){
+        final EquEqu result = new EquEqu();
+        result.setLeft(fromXtext(text_decl.getLeft()));
+        result.setRight(fromXtext(text_decl.getRight()));
+        return result;
+    }*/
+
+/*  static CompExpr fromXtext(final org.abs_models.xtext.abs.CompPrimaryExpression xtext_decl){
+        //if(xtext_decl.getInner() != null) 
+        return fromXtext(xtext_decl.getInner());
+    }        if(xtext_decl.getInner() != null){ fromXtext(xtext_decl.getInner());
+            final CompModExpr result = new CompModExpr();
+            result.setLeft(fromXtext(text_decl.getLeft()));
+            result.setRight(fromXtext(text_decl.getRight()));
+            return result;
+        }else if(xtext_decl.isMult()){
+*/
+    /*static CompExpr fromXtext(final org.abs_models.xtext.abs.CompDMExpression xtext_decl){
+        if(xtext_decl.getRight() == null) return fromXtext(xtext_decl.getLeft());
+        if(xtext_decl.isMod()){
+            final CompModExpr result = new CompModExpr();
+            result.setLeft(fromXtext(text_decl.getLeft()));
+            result.setRight(fromXtext(text_decl.getRight()));
+            return result;
+        }else if(xtext_decl.isMult()){
+            final CompMultExpr result = new CompMultExpr();
+            result.setLeft(fromXtext(text_decl.getLeft()));
+            result.setRight(fromXtext(text_decl.getRight()));
+            return result;
+        }else{
+            final CompDivExpr result = new CompDivExpr();
+            result.setLeft(fromXtext(text_decl.getLeft()));
+            result.setRight(fromXtext(text_decl.getRight()));
+            return result;
+        }
+    }
+
+    static CompExpr fromXtext(final org.abs_models.xtext.abs.CompExpression xtext_decl){
+        if(xtext_decl.getRight() == null) return fromXtext(xtext_decl.getLeft());
+        if(xtext_decl.isMinus()){
+            final CompMinusExpr result = new CompMinusExpr();
+            result.setLeft(fromXtext(text_decl.getLeft()));
+            result.setRight(fromXtext(text_decl.getRight()));
+            return result;
+        }else{
+            final CompPlusExpr result = new CompPlusExpr();
+            result.setLeft(fromXtext(text_decl.getLeft()));
+            result.setRight(fromXtext(text_decl.getRight()));
+            return result;
+        }
+    }*/
+
+    static InternalEqu fromXtext(final org.abs_models.xtext.abs.InternalEquation xtext_decl) {
+        if(xtext_decl.isConnection()){
+            final ConnectEqu result = new ConnectEqu();
+            result.setLeft(fromXtext(xtext_decl.getIleft()));
+            result.setRight(fromXtext(xtext_decl.getIright()));
+            return result;
+        }
+        return null;
+    }
+
+    static ExternalEqu fromXtext(final org.abs_models.xtext.abs.InstEquation xtext_decl) {
+        if(xtext_decl.isIs()){
+            final IsEqu result = new IsEqu();
+            result.setLeft(fromXtext(xtext_decl.getLeft()));
+            result.setRight(fromXtext(xtext_decl.getRight()));
+            return result;
+        }
+        return null;
+    }
+
+    static CompAccessExpr fromXtext(final org.abs_models.xtext.abs.CompAccessExpression xtext_decl) {
+        final CompAccessExpr result = new CompAccessExpr();
+        if(xtext_decl.getComponent() != null) result.setTarget(xtext_decl.getComponent()); 
+        else                                  result.setTarget("");
+        result.setProperty(xtext_decl.getVariablename());
         return result;
     }
 
@@ -620,6 +728,10 @@ public class XtextToJastAdd {
 
         for(final org.abs_models.xtext.abs.FieldDeclaration fieldDecl : xtext_decl.getFields()) {
             result.addFieldNoTransform(fromXtext(fieldDecl));
+        }
+
+        if(xtext_decl.getPhysical() != null){
+            result.setPhysicalBehavior(fromXtext(xtext_decl.getPhysical()));
         }
 
         // TODO treat the case of an empty init block
