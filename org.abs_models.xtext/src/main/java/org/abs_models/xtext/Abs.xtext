@@ -284,18 +284,18 @@ InternalEquation
 
 CompEquation : lhs=CompExpression '=' rhs=CompExpression; 
 
-CompAccessExpression //returns Expression
+CompAccessExpression 
     : (component=IDENTIFIER '.')? variablename=IDENTIFIER
     ;
 
-CompExpression returns Expression
+CompExpression 
     : left=CompDMExpression
         (( plus?='+'
          | minus?='-')
         right=CompDMExpression)*
     ; // left-assoc
 
-CompDMExpression returns Expression
+CompDMExpression 
     : left=CompPrimaryExpression
         ((  mult?='*'
          | div?='/'
@@ -304,30 +304,28 @@ CompDMExpression returns Expression
     ; // left-assoc
 
 
-CompPrimaryExpression returns Expression
+CompPrimaryExpression 
     :  '(' CompExpression ')'
     | CompUnaryExpression
     | CompFunctionAppExpression
-    | DerivativeExpression
     | CompAtomicExpression
+    | DerivativeExpression
     ;
 
-CompAtomicExpression returns Expression
+CompAtomicExpression 
     : INTLITERAL
     | FLOATLITERAL
     | CompAccessExpression
     ;
 
 
-DerivativeExpression returns Expression
-: 'der' '(' param = Expression ')';
+DerivativeExpression : 'der' '(' param = CompExpression ')';
 
-CompUnaryExpression returns Expression
-    :  '-' CompPrimaryExpression //{NotExpression.body=current}
-    ;
-CompFunctionAppExpression returns Expression
+CompUnaryExpression :  '-' CompExpression;
+
+CompFunctionAppExpression 
     : functionname=QualifiedIdentifier
-        '(' (arguments+=CompExpression ( ',' arguments+=CompExpression)* )? ')'
+        '(' (args+=CompExpression ( ',' args+=CompExpression)* )? ')'
     ;
 
 // Expressions
